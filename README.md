@@ -23,6 +23,9 @@ The mod should aim to fit into the base game without looking like a mod.
 
 	Army Disband button
 		You can't disband armies that have generals
+	
+	Jump to Siege button
+		Only jumps to the first village under siege, I will try to make it cycle through them
 
 
 Acknowledgments:  
