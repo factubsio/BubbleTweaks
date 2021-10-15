@@ -27,6 +27,10 @@ The mod should aim to fit into the base game without looking like a mod.
 	Jump to Siege button
 		Only jumps to the first village under siege, I will try to make it cycle through them
 
+	Loot on the Local Map is coloured:
+		Red - dropped by a dead unit
+		Green - lootable object
+
 
 Acknowledgments:  
 

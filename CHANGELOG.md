@@ -1,3 +1,11 @@
+## Version 0.4.0
+
+* Colours loot on the local map (green/red for lootable/corpse)
+
+## Version 0.3.0
+
+* Added a Jump-to-siege button
+
 ## Version 0.2.0
 
 * Added "disband army" button

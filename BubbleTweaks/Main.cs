@@ -77,8 +77,6 @@ namespace BubbleTweaks {
     }
 
 
-
-
     [HarmonyPatch(typeof(UISettingsManager), "Initialize")]
     static class SettingsInjector {
         static bool Initialized = false;
