@@ -27,6 +27,11 @@ The mod should aim to fit into the base game without looking like a mod.
 	Jump to Siege button
 		Only jumps to the first village under siege, I will try to make it cycle through them
 
+	Village List
+		In GlobalMap mode, adds an expandable menu on the right hand side (under the mini-map)
+		Shows all your villages with the current building state (built + building, free-slots)
+		Clicking on a village name will pan the camera to that village
+
 	Loot on the Local Map is coloured:
 		Red - dropped by a dead unit
 		Green - lootable object

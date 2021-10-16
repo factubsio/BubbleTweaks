@@ -1,3 +1,11 @@
+
+## Version 0.5.0
+
+ * Village List
+   * In GlobalMap mode, adds an expandable menu on the right hand side (under the mini-map)
+   * Shows all your villages with the current building state (built + building, free-slots)
+   * Clicking on a village name will pan the camera to that village
+
 ## Version 0.4.0
 
 * Colours loot on the local map (green/red for lootable/corpse)
