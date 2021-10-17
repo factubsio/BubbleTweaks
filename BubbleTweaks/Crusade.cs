@@ -211,7 +211,8 @@ namespace BubbleTweaks {
                 var label = entry.transform.Find("Button/Text").GetComponent<TextMeshProUGUI>();
                 var stats = entry.transform.Find("Button/Stats").GetComponent<TextMeshProUGUI>();
                 label.text = settlment.Name;
-                stats.text = $"{settlment.Buildings.Count(b => b.IsFinished && !b.IsSpecialSlot)}+{settlment.Buildings.Count(b => !b.IsFinished)}, {settlment.SlotsLeft}";
+                stats.text = "";
+                //stats.text = $"{settlment.Buildings.Count(b => b.IsFinished && !b.IsSpecialSlot)}+{settlment.Buildings.Count(b => !b.IsFinished)}, {settlment.SlotsLeft}";
                 var button = entry.transform.Find("Button").GetComponent<OwlcatButton>();
                 button.OnLeftClick.AddListener(() => {
                     Game.Instance.UI.GetCameraRig().ScrollTo(settlment.MarkerManager.m_Marker.transform.position);

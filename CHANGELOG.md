@@ -1,3 +1,6 @@
+## Version 0.5.1
+
+* Disable slot stats in village list (hopefully fixes gray building bug)
 
 ## Version 0.5.0
 
