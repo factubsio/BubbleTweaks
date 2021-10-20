@@ -1,3 +1,8 @@
+## Version 0.6.0
+
+* Update to Game Version 1.1 (beta), won't work on old version.
+* Added invading armies and quest locations to the map sidebar.
+
 ## Version 0.5.1
 
 * Disable slot stats in village list (hopefully fixes gray building bug)

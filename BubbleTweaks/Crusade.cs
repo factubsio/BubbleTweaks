@@ -26,6 +26,8 @@ using DG.Tweening;
 using HarmonyLib;
 using Kingmaker.UI.MVVM._PCView.ServiceWindows.Encyclopedia;
 using Kingmaker.UI.MVVM._PCView.ServiceWindows.Journal;
+using Kingmaker.UI.MVVM._PCView.Crusade.Overtips;
+using Kingmaker.AreaLogic.QuestSystem;
 
 namespace BubbleTweaks {
 
@@ -61,6 +63,25 @@ namespace BubbleTweaks {
                 Crusade.JumpToSiegeButton.Interactable = Crusade.AnySettlementsUnderSiege;
         }
     }
+
+    //[HarmonyPatch(typeof(GlobalMapArmyOvertipItemPCView), "BindViewImplementation")]
+    //static class MovingArmyIconAdjuster {
+    //    public static void Postfix(GlobalMapArmyOvertipItemPCView __instance) {
+    //        __instance.AddDisposable(__instance.ViewModel.IsCrusade.Subscribe(_ => {
+    //            if (__instance.ViewModel?.ArmyState?.ArmyType == Kingmaker.Armies.Blueprints.ArmyType.Travelling) {
+    //                __instance.m_MovementPoint.gameObject.transform.parent.gameObject.SetActive(true);
+    //            }
+    //        }));
+    //        __instance.AddDisposable(__instance.ViewModel.Position.Subscribe(_ => {
+    //            if (__instance.ViewModel?.ArmyState?.ArmyType == Kingmaker.Armies.Blueprints.ArmyType.Travelling) {
+    //                __instance.m_MovementPoint.gameObject.transform.parent.gameObject.SetActive(true);
+    //            }
+    //        }));
+    //        if (__instance.ViewModel?.ArmyState?.ArmyType == Kingmaker.Armies.Blueprints.ArmyType.Travelling) {
+    //                __instance.m_MovementPoint.gameObject.transform.parent.gameObject.SetActive(true);
+    //        }
+    //    }
+    //}
 
     [HarmonyPatch(typeof(GlobalMapLocalMapManager), "Show")]
     static class GlobalMapLocalMapToggler {
@@ -113,7 +134,7 @@ namespace BubbleTweaks {
                 }
 
                 if (VillageListRoot == null) {
-                    var scrollPrefab = Game.Instance.UI.GlobalMapCanvas.transform.Find("ServiceWindowsConfig/EncyclopediaView/EncyclopediaNavigationView/BodyGroup/StandardScrollView").gameObject;
+                    var scrollPrefab = Game.Instance.UI.GlobalMapCanvas.transform.Find("ServiceWindowsConfig/EncyclopediaPCView/EncyclopediaNavigationView/BodyGroup/StandardScrollView").gameObject;
                     var localMapPrefab = Game.Instance.UI.GlobalMapCanvas.transform.Find("LocalMap").gameObject;
 
                     VillageListRoot = GameObject.Instantiate(localMapPrefab, Game.Instance.UI.GlobalMapCanvas.transform);
@@ -202,21 +223,70 @@ namespace BubbleTweaks {
         }
 
         private static void BuildVillageList() {
-            for (int i = 0; i < scrollContents.childCount; i++) {
-                GameObject.Destroy(scrollContents.GetChild(i).gameObject);
+            int toDestroy = scrollContents.childCount;
+            for (int i = 0; i < toDestroy; i++) {
+                GameObject.DestroyImmediate(scrollContents.GetChild(0).gameObject);
             }
 
+            AddEntry("Villages");
             foreach (var settlment in KingdomState.Instance.SettlementsManager.Settlements) {
+                AddEntry(settlment.Name, settlment.UnderSiege ? "SIEGED" : "", () => settlment.MarkerManager.m_Marker.transform.position);
+            }
+
+            AddEntry("Invaders");
+            foreach (var army in GlobalMapView.Instance.State.TravelingArmies) {
+                if (army.ArmyType == Kingmaker.Armies.Blueprints.ArmyType.Travelling) {
+                    AddEntry(army.Data.ArmyName.ArmyName, "INVADING", () => army.View.Position);
+                }
+            }
+
+
+            Dictionary<Guid, (BlueprintGlobalMapPoint, int)> questsForPoints = new();
+
+            Main.Log("Gathering quests");
+            foreach (Quest quest in Game.Instance.Player.QuestBook.Quests) {
+                if (quest.State == QuestState.Started) {
+                    foreach (QuestObjective questObjective in quest.Objectives) {
+                        if (questObjective.State == QuestObjectiveState.Started) {
+                            foreach (BlueprintGlobalMapPoint location in questObjective.Blueprint.Locations) {
+                                var key = location.AssetGuid.m_Guid;
+                                if (!questsForPoints.TryGetValue(key, out var state)) {
+                                    questsForPoints[key] = (location, 1);
+                                } else {
+                                    questsForPoints[key] = (location, state.Item2 + 1);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            AddEntry("Quest Locations");
+            foreach (var point in questsForPoints.Values) {
+                string suffix = point.Item2 == 1 ? "" : "s";
+                AddEntry(point.Item1.Name, $"{point.Item2} quest{suffix}", () => GlobalMapView.Instance.GetPointView(point.Item1).transform.position);
+            }
+
+            static void AddEntry(string nameText, string statsText = null, Func<Vector3> position = null) {
                 var entry = GameObject.Instantiate(entryPrefab, scrollContents);
                 var label = entry.transform.Find("Button/Text").GetComponent<TextMeshProUGUI>();
                 var stats = entry.transform.Find("Button/Stats").GetComponent<TextMeshProUGUI>();
-                label.text = settlment.Name;
-                stats.text = "";
-                //stats.text = $"{settlment.Buildings.Count(b => b.IsFinished && !b.IsSpecialSlot)}+{settlment.Buildings.Count(b => !b.IsFinished)}, {settlment.SlotsLeft}";
+                label.text = nameText;
+                if (statsText != null) {
+                    stats.text = statsText;
+                    stats.color = Color.red;
+                } else {
+                    stats.text = "";
+                }
                 var button = entry.transform.Find("Button").GetComponent<OwlcatButton>();
-                button.OnLeftClick.AddListener(() => {
-                    Game.Instance.UI.GetCameraRig().ScrollTo(settlment.MarkerManager.m_Marker.transform.position);
-                });
+                if (position != null) {
+                    button.OnLeftClick.AddListener(() => {
+                        Game.Instance.UI.GetCameraRig().ScrollTo(position());
+                    });
+                } else {
+                    button.GetComponentInChildren<Image>().color = new Color(.25f, .25f, .25f);
+                    button.Interactable = false;
+                }
             }
         }
 
@@ -283,6 +353,7 @@ namespace BubbleTweaks {
 
                 disbandButton.m_OnSingleLeftClick = new Button.ButtonClickedEvent();
                 disbandButton.m_OnSingleLeftClick.AddListener(() => {
+                    Main.Log("Trying to kill army?");
                     if (armySelectionHandler.Army == null)
                         return;
                     if (armySelectionHandler.Army.Data.m_LeaderGuid != null && armySelectionHandler.Army.Data.m_LeaderGuid.Length > 0) {
@@ -303,6 +374,7 @@ namespace BubbleTweaks {
                 var frame = buttonNew.transform as RectTransform;
                 frame.name = "BUBBLEBUT0";
                 frame.localPosition += new Vector3(0, frame.rect.height + 4, 0);
+                Main.Log("Finished installing Crusade UI Tweaks");
             }
         }
     }
