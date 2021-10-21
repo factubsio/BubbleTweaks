@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using System.Linq;
 using JetBrains.Annotations;
 using Kingmaker;
 using Kingmaker.Blueprints.JsonSystem;
@@ -16,8 +17,18 @@ using UnityEngine.UI;
 using Owlcat.Runtime.UI.Controls.Button;
 using Kingmaker.UI.Common;
 using Kingmaker.Globalmap.State;
+using System.Collections.Generic;
 
 namespace BubbleTweaks {
+
+    public enum AttackTextColor {
+        Default,
+        Yellow,
+        Red,
+        Blue,
+    }
+
+    public class UISettingsEntityDropdownAttackTextColor : UISettingsEntityDropdownEnum<AttackTextColor> { }
 
     public class BubbleSettings {
         public SettingsEntityFloat TacticalCombatSpeed = new("bubbles.settings.game.tactical.time-scale", 1.0f);
@@ -25,12 +36,34 @@ namespace BubbleTweaks {
         public SettingsEntityFloat OutOfCombatSpeed = new("bubbles.settings.game.out-of-combat.time-scale", 1.0f);
         public SettingsEntityFloat GlobalMapSpeed = new("bubbles.settings.game.global-map.time-scale", 1.0f);
 
+        public SettingsEntityFloat CombatCursorScale = new("bubbles.settings.game.cursor-scale.combat", 1.0f);
+        public SettingsEntityFloat NonCombatCursorScale = new("bubbles.settings.game.cursor-scale.non-combat", 1.0f);
+        public SettingsEntityEnum<AttackTextColor> CursorAttackTextColor = new("bubbles.settings.game.cursor-text-color", AttackTextColor.Default);
+
         public UISettingsEntitySliderFloat TacticalCombatSpeedSlider;
         public UISettingsEntitySliderFloat InCombatSpeedSlider;
         public UISettingsEntitySliderFloat OutOfCombatSpeedSlider;
         public UISettingsEntitySliderFloat GlobalMapSpeedSlider;
 
+        public UISettingsEntitySliderFloat CombatCursorScaleSlider;
+        public UISettingsEntitySliderFloat NonCombatCursorScaleSlider;
+        public UISettingsEntityDropdownEnum<AttackTextColor> CursorAttackTextColorDropdown;
+
         private BubbleSettings() { }
+
+        public static V MakeEnumDropdown<V, T>(string key, string name, string tooltip) where T: Enum where V : UISettingsEntityDropdownEnum<T> {
+            var dropdown = ScriptableObject.CreateInstance<V>();
+            Main.Log($"dropdown null: {dropdown == null}");
+            dropdown.m_Description = Helpers.CreateString($"{key}.description", name);
+            dropdown.m_TooltipDescription = Helpers.CreateString($"{key}.tooltip-description", tooltip);
+            dropdown.m_CashedLocalizedValues = new();
+            Main.Log("created cashed values?");
+            foreach (var v in Enum.GetValues(typeof(T)))
+                dropdown.m_CashedLocalizedValues.Add(v.ToString());
+            dropdown.m_ShowVisualConnection = true;
+
+            return dropdown;
+        }
 
         public static UISettingsEntitySliderFloat MakeSliderFloat(string key, string name, string tooltip, float min, float max, float step) {
             var slider = ScriptableObject.CreateInstance<UISettingsEntitySliderFloat>();
@@ -70,6 +103,28 @@ namespace BubbleTweaks {
             (GlobalMapSpeed as IReadOnlySettingEntity<float>).OnValueChanged += (_) => {
                 SpeedTweaks.UpdateSpeed();
             };
+
+            try {
+
+                CombatCursorScaleSlider = MakeSliderFloat("settings.game.cursor-scale.combat", "Scale the cursor for combat actions (e.g. attack, step, ranged attack", "Scale the cursor for combat actions (e.g. attack, step, ranged attack", 0.25f, 5.0f, 0.25f);
+                CombatCursorScaleSlider.LinkSetting(CombatCursorScale);
+            } catch (Exception ex) {
+                Main.Error(ex, "making combat cursor scale");
+            }
+
+            try {
+                NonCombatCursorScaleSlider = MakeSliderFloat("settings.game.cursor-scale.non-combat", "Scale the cursor for non-combat actions", "Scale the cursor for non-combat actions", 0.25f, 5.0f, 0.25f);
+                NonCombatCursorScaleSlider.LinkSetting(NonCombatCursorScale);
+
+            } catch (Exception ex) {
+                Main.Error(ex, "making non combat cursor scale ");
+            }
+            try {
+                CursorAttackTextColorDropdown = MakeEnumDropdown<UISettingsEntityDropdownAttackTextColor, AttackTextColor>("settings.game.cursor-text-color", "Color for the attack-count on the cursor", "Color for the attack-count text on the curosr");
+                CursorAttackTextColorDropdown.LinkSetting(CursorAttackTextColor);
+            } catch (Exception ex) {
+                Main.Error(ex, "making combat text color");
+            }
         }
 
         private static readonly BubbleSettings instance = new();
@@ -95,6 +150,12 @@ namespace BubbleTweaks {
                     BubbleSettings.Instance.InCombatSpeedSlider,
                     BubbleSettings.Instance.OutOfCombatSpeedSlider,
                     BubbleSettings.Instance.TacticalCombatSpeedSlider));
+
+            Game.Instance.UISettingsManager.m_GameSettingsList.Add(
+                BubbleSettings.MakeSettingsGroup("bubble.cursor-tweaks", "Bubble cursor tweaks",
+                    BubbleSettings.Instance.CombatCursorScaleSlider,
+                    BubbleSettings.Instance.NonCombatCursorScaleSlider,
+                    BubbleSettings.Instance.CursorAttackTextColorDropdown));
         }
     }
 

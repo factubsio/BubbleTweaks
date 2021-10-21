@@ -1,3 +1,8 @@
+## Version 0.7.0
+
+* Customisable cursor scale for combat/non-combat cursors
+* Customisable(ish) color for attack count text (white is sometimes real hard to see)
+
 ## Version 0.6.1
 
 * Minor patch to not apply speed tweaks during TBM combat as it _may_ be causing TBM slowdowns

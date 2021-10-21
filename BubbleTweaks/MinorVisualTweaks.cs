@@ -11,8 +11,47 @@ using UnityEngine;
 using Kingmaker.EntitySystem.Entities;
 using Kingmaker.View;
 using Kingmaker.UI.MVVM._VM.ServiceWindows.LocalMap.Markers;
+using Kingmaker.UI;
+using static Kingmaker.Blueprints.Root.CursorRoot;
+using Kingmaker.UI.AbilityTarget;
 
 namespace BubbleTweaks {
+
+    [HarmonyPatch(typeof(CursorController), "SetCursor")]
+    static class JumboCursors {
+        private static HashSet<CursorType> jumbo = new() {
+            CursorType.AttackCursor,
+            CursorType.RangeAttackCursor,
+            CursorType.StepCursor,
+            CursorType.StepVerticalCursor,
+            CursorType.MoveCursor,
+        };
+
+        private static Dictionary<AttackTextColor, Color> colorForValue = new() {
+            { AttackTextColor.Default, Color.white },
+            { AttackTextColor.Red, Color.red },
+            { AttackTextColor.Blue, Color.blue },
+            { AttackTextColor.Yellow, Color.yellow },
+        };
+
+        private static AttackTextColor currentAttackTextColor = AttackTextColor.Default;
+
+        public static void Postfix(CursorType cursorType) {
+            if (PCCursor.Instance?.m_CanvasScaler == null)
+                return;
+
+            if (jumbo.Contains(cursorType))
+                PCCursor.Instance.m_CanvasScaler.scaleFactor = BubbleSettings.Instance.CombatCursorScale.GetValue();
+            else
+                PCCursor.Instance.m_CanvasScaler.scaleFactor = BubbleSettings.Instance.NonCombatCursorScale.GetValue();
+
+            if (currentAttackTextColor != BubbleSettings.Instance.CursorAttackTextColor.GetValue()) {
+                currentAttackTextColor = BubbleSettings.Instance.CursorAttackTextColor.GetValue();
+                PCCursor.Instance.Text.color = colorForValue[currentAttackTextColor];
+            }
+
+        }
+    }
 
     [HarmonyPatch(typeof(LocalMapMarkerPCView), "BindViewImplementation")]
     static class PatchLootVisualColor {

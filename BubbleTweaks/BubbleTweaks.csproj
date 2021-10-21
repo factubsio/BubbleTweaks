@@ -53,15 +53,15 @@
   </Target>
   <Target Name="Publicise" AfterTargets="CreateLib">
     <ItemGroup>
-      <PubliciseAssemblyCSharp Include="$(WrathPath)\Wrath_Data\Managed\Assembly-CSharp.dll;$(WrathPath)\Wrath_Data\Managed\Owlcat.Runtime.UI.dll" />
-      <PubliciseUniRx Include="$(WrathPath)\Wrath_Data\Managed\UniRx.dll" />
+      <PubliciseAssemblyCSharp Include="$(WrathPathDebug)\Wrath_Data\Managed\Assembly-CSharp.dll;$(WrathPathDebug)\Wrath_Data\Managed\Owlcat.Runtime.UI.dll" />
+      <PubliciseUniRx Include="$(WrathPathDebug)\Wrath_Data\Managed\UniRx.dll" />
     </ItemGroup>
     <Publicise InputAssemblies="@(PubliciseAssemblyCSharp)" OutputPath="$(SolutionDir)lib/" PubliciseCompilerGenerated="true" />
     <Publicise InputAssemblies="@(PubliciseUniRx)" OutputPath="$(SolutionDir)lib/" PubliciseCompilerGenerated="true" />
   </Target>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\UnityModManager\0Harmony.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityModManager\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
@@ -73,7 +73,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Build.Framework" />
@@ -83,15 +83,15 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="DOTween">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\DOTween.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\DOTween.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="DOTween46">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\DOTween46.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\DOTween46.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Owlcat.Runtime.Core">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\Owlcat.Runtime.Core.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\Owlcat.Runtime.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
@@ -112,32 +112,32 @@
     </Reference>
     <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.UIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
@@ -149,11 +149,11 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityModManager">
-      <HintPath>$(WrathPath)\Wrath_Data\Managed\UnityModManager\UnityModManager.dll</HintPath>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityModManager\UnityModManager.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -207,6 +207,6 @@
     <Error Condition="!Exists('..\packages\Aze.Publicise.MSBuild.Task.1.0.0\build\Aze.Publicise.MSBuild.Task.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Aze.Publicise.MSBuild.Task.1.0.0\build\Aze.Publicise.MSBuild.Task.props'))" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>(robocopy "$(TargetDir) " "%25WrathPath%25\Mods\BubbleTweaks\ " /s /e )^&amp; IF %25ERRORLEVEL%25 LEQ 1 exit 0</PostBuildEvent>
+    <PostBuildEvent>(robocopy "$(TargetDir) " "%25WrathPathDebug%25\Mods\BubbleTweaks\ " /s /e )^&amp; IF %25ERRORLEVEL%25 LEQ 1 exit 0</PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -38,6 +38,10 @@ The mod should aim to fit into the base game without looking like a mod.
 		Green - lootable object
 
 
+	Cursor Enhancements
+		Scalable cursor for combat/non-combat
+		Full-attack text color can be semi-customised
+
 Acknowledgments:  
 
 -   Pathfinder Wrath of The Righteous Discord channel members
