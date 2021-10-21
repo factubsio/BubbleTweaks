@@ -223,6 +223,10 @@ namespace BubbleTweaks {
         }
 
         private static void BuildVillageList() {
+            if (VillageListRoot != null && (VillageListRoot.transform == null || VillageListRoot.transform.parent == null)) {
+                return;
+            }
+
             int toDestroy = scrollContents.childCount;
             for (int i = 0; i < toDestroy; i++) {
                 GameObject.DestroyImmediate(scrollContents.GetChild(0).gameObject);

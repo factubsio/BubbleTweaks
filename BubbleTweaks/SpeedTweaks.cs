@@ -12,6 +12,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityModManagerNet;
 using UnityEngine.Events;
+using TurnBased.Controllers;
 
 namespace BubbleTweaks {
 
@@ -32,7 +33,7 @@ namespace BubbleTweaks {
 
             [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "unity method")]
             private void LateUpdate() {
-                if (!Main.Enabled || Game.Instance.IsPaused || Game.Instance.InvertPauseButtonPressed || Game.Instance.Player == null) {
+                if (!Main.Enabled || Game.Instance.IsPaused || Game.Instance.InvertPauseButtonPressed || Game.Instance.Player == null || CombatController.IsInTurnBasedCombat()) {
                     return;
                 }
                 if (Game.Instance.CurrentMode == GameModeType.Default) {

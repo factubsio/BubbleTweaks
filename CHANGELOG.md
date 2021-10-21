@@ -1,3 +1,7 @@
+## Version 0.6.1
+
+* Minor patch to not apply speed tweaks during TBM combat as it _may_ be causing TBM slowdowns
+
 ## Version 0.6.0
 
 * Update to Game Version 1.1 (beta), won't work on old version.
