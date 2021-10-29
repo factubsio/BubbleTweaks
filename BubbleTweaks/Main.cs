@@ -18,6 +18,13 @@ using Owlcat.Runtime.UI.Controls.Button;
 using Kingmaker.UI.Common;
 using Kingmaker.Globalmap.State;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+using Kingmaker.Visual.CharacterSystem;
+using Kingmaker.Utility;
+using Kingmaker.Blueprints;
+using Newtonsoft.Json;
+using System.IO;
+using System.Reflection;
 
 namespace BubbleTweaks {
 
@@ -165,6 +172,7 @@ namespace BubbleTweaks {
     static class Main {
         private static Harmony harmony;
         public static bool Enabled;
+        internal static string ModPath;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "harmony method")]
         static bool Load(UnityModManager.ModEntry modEntry) {
@@ -175,29 +183,57 @@ namespace BubbleTweaks {
             modEntry.OnUpdate = OnUpdate;
             ModSettings.ModEntry = modEntry;
 
+            ModSettings.ModEntry.Logger.Log("HELLO???");
+
             ModSettings.LoadAllSettings();
+            Enabled = true;
+            ModPath = modEntry.Path;
+
+            //BundleManger.AddBundle("tutorialcanvas");
+            Main.Log("Loaded bundle");
+
+#if DEBUG
             harmony.PatchAll();
             PostPatchInitializer.Initialize();
-            Enabled = true;
+            //SpeedTweaks.Install();
+            //Crusade.Install();
+#else
+            harmony.PatchAll();
+            PostPatchInitializer.Initialize();
             SpeedTweaks.Install();
-
             Crusade.Install();
+            StatisticsOhMy.Install();
+#endif
 
 
             return true;
         }
+        static bool Shifting => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
         static void OnUpdate(UnityModManager.ModEntry modEntry, float delta) {
 
-            if (Input.GetKeyDown(KeyCode.B) && Input.GetKey(KeyCode.LeftControl)) {
-
+#if DEBUG
+            if (Input.GetKeyDown(KeyCode.I) && Shifting) {
+                Game.ResetUI();
+            } else if (Input.GetKeyDown(KeyCode.B) && Shifting) {
+                modEntry.GetType().GetMethod("Reload", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(modEntry, new object[] { });
+            } else if (Input.GetKeyDown(KeyCode.R) && Shifting) {
+                var serializer = new JsonSerializer();
+                serializer.Formatting = Formatting.Indented;
+                var writer = new StringWriter();
+                serializer.Serialize(writer, GlobalRecord.Instance);
+                writer.Flush();
+                Main.Log(writer.ToString());
             }
+#endif
         }
 
         static bool OnUnload(UnityModManager.ModEntry modEntry) {
+
             harmony.UnpatchAll();
-            SpeedTweaks.Uninstall();
-            Crusade.Uninstall();
+            //SpeedTweaks.Uninstall();
+            //Crusade.Uninstall();
+            StatisticsOhMy.Uninstall();
 
             return true;
 
@@ -228,6 +264,14 @@ namespace BubbleTweaks {
         public static void Error(string message) {
             Log(message);
             PFLog.Mods.Error(message);
+        }
+
+        public static void Safely(Action act) {
+            try {
+                act();
+            } catch(Exception ex) {
+                Main.Error(ex, "trying to safely invoke action");
+            }
         }
     }
 }

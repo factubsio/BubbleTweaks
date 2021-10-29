@@ -20,7 +20,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -158,6 +158,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BundleManager.cs" />
     <Compile Include="Config\Blueprints.cs" />
     <Compile Include="Config\IDisableableGroup.cs" />
     <Compile Include="Config\IUpdatableSettings.cs" />
@@ -170,6 +171,7 @@
     <Compile Include="Resources.cs" />
     <Compile Include="SaveGamePatch.cs" />
     <Compile Include="SpeedTweaks.cs" />
+    <Compile Include="StatisticsOhMy.cs" />
     <Compile Include="Utilities\AssetLoader.cs" />
     <Compile Include="Utilities\Attributes.cs" />
     <Compile Include="Utilities\DescriptionTools.cs" />
@@ -182,6 +184,7 @@
     <Compile Include="Utilities\ILUtils.cs" />
     <Compile Include="Utilities\SpellTools.cs" />
     <Compile Include="Utilities\TypeReplaceTranspiler.cs" />
+    <Compile Include="Utilities\UIHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Config\AddedContent.json" />
