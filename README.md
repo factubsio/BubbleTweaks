@@ -42,6 +42,10 @@ The mod should aim to fit into the base game without looking like a mod.
 		Scalable cursor for combat/non-combat
 		Full-attack text color can be semi-customised
 
+	Character Statistics (beta)
+		Each character will have a new tab 'statistics' in their character sheet
+		It can only track stats while it's installed so sadly it won't retroactively find them
+
 Acknowledgments:  
 
 -   Pathfinder Wrath of The Righteous Discord channel members

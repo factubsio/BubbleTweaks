@@ -1,3 +1,7 @@
+## Version 0.8.0
+
+* Added statistics
+
 ## Version 0.7.0
 
 * Customisable cursor scale for combat/non-combat cursors
