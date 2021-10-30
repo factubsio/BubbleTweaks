@@ -1,3 +1,9 @@
+## Version 0.8.3
+ * Fix CRITICAL bug where the load routine would keep a handle to the save, so subsequents saves to the same file would fail with "Saving is Impossible", sorry.
+ * Add 'all saves'
+ * Add save pass% and fail%
+
+
 ## Version 0.8.2
  * Fix skill checks (not backdatable sorry)
 

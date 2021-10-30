@@ -346,7 +346,6 @@ namespace BubbleTweaks {
                 serializer.Serialize(writer, GlobalRecord.Instance);
                 writer.Flush();
                 saver.SaveJson(LoadHooker.FileName, writer.ToString());
-                Main.Log("save complete...");
             });
         }
     }
@@ -357,24 +356,24 @@ namespace BubbleTweaks {
 
         [HarmonyPatch("LoadGame"), HarmonyPostfix]
         static void LoadGame(SaveInfo saveInfo) {
-            Main.Log("loading...");
-            LoadingProcess.Instance.StartLoadingProcess(LoadRoutine(saveInfo), null, LoadingProcessTag.None);
-        }
-
-
-        private static IEnumerator LoadRoutine(SaveInfo saveInfo) {
-            Main.Safely(() => {
-                var serializer = new JsonSerializer();
-                var raw = saveInfo.Saver.ReadJson(FileName);
-                if (raw != null) {
-                    var rawReader = new StringReader(raw);
-                    var jsonReader = new JsonTextReader(rawReader);
-                    GlobalRecord.Instance = serializer.Deserialize<GlobalRecord>(jsonReader);
-                } else {
-                    GlobalRecord.Instance = new GlobalRecord();
+            using (saveInfo) {
+                using (saveInfo.GetReadScope()) {
+                    ThreadedGameLoader.RunSafelyInEditor((Action)(() => {
+                        string raw;
+                        using (ISaver saver = saveInfo.Saver.Clone()) {
+                            raw = saver.ReadJson(FileName);
+                        }
+                        if (raw != null) {
+                            var serializer = new JsonSerializer();
+                            var rawReader = new StringReader(raw);
+                            var jsonReader = new JsonTextReader(rawReader);
+                            GlobalRecord.Instance = serializer.Deserialize<GlobalRecord>(jsonReader);
+                        } else {
+                            GlobalRecord.Instance = new GlobalRecord();
+                        }
+                    })).Wait();
                 }
-            });
-            yield return null;
+            }
         }
     }
 
@@ -471,17 +470,18 @@ namespace BubbleTweaks {
 
     [BubbleDisplayable]
     public struct SavesRecord {
-        [BubbleDisplay(0, "Critical passes")]
+        [BubbleDisplay(0, "Successes")]
+        public string PassesWithPercent => CharacterRecord.GetRawAndPercent(Passed, Passed + Failed);
+        [BubbleDisplay(0.1, "Critical Successes")]
         public int PassedCrit;
 
-        [BubbleDisplay(0, "Passes")]
-        public int Passed;
-
-        [BubbleDisplay(0, "Failures")]
-        public int Failed;
-
-        [BubbleDisplay(0, "Critical failures")]
+        [BubbleDisplay(1, "Failures")]
+        public string FailsWithPercent => CharacterRecord.GetRawAndPercent(Failed, Passed + Failed);
+        [BubbleDisplay(1.1, "Critical failures")]
         public int FailedCrit;
+
+        public int Passed;
+        public int Failed;
     }
 
     public class CharacterRecord {
@@ -491,7 +491,7 @@ namespace BubbleTweaks {
         [BubbleDisplay(0, "Damage done")]
         public int DamageDone;
 
-        private static string GetPercent(int top, int bottom) {
+        public static string GetPercent(int top, int bottom) {
             if (bottom == 0) {
                 return "0%";
             }
@@ -499,7 +499,7 @@ namespace BubbleTweaks {
             int percent = (int)(proportion * 100);
             return $"{percent}%";
         }
-        private static string GetRawAndPercent(int top, int bottom) {
+        public static string GetRawAndPercent(int top, int bottom) {
             return $"({GetPercent(top, bottom)})   {top}";
         }
 
@@ -552,19 +552,6 @@ namespace BubbleTweaks {
         public SavesRecord[] Saves = new SavesRecord[Enum.GetValues(typeof(SavingThrowType)).Length];
 
 
-        [JsonIgnore]
-        public SavesRecord SavesTotal {
-            get {
-                SavesRecord total = new();
-                foreach (var record in Saves) {
-                    total.Failed += record.Failed;
-                    total.FailedCrit += record.FailedCrit;
-                    total.Passed += record.Passed;
-                    total.PassedCrit += record.PassedCrit;
-                }
-                return total;
-            }
-        }
 
         public int SpellsResistedByMe;
         public int SpellsResistedBThem;
@@ -604,14 +591,30 @@ namespace BubbleTweaks {
         public Dictionary<string, int> SpellsCast = new();
         public Dictionary<string, int> WeaponsUsed = new();
 
-        [BubbleDisplay(0, "Fortitude saves", 1)]
+        [JsonIgnore]
+        [BubbleDisplay(0, "All saves", 1)]
+        public SavesRecord SavesTotal {
+            get {
+                SavesRecord total = new();
+                foreach (var record in Saves) {
+                    total.Failed += record.Failed;
+                    total.FailedCrit += record.FailedCrit;
+                    total.Passed += record.Passed;
+                    total.PassedCrit += record.PassedCrit;
+                }
+                return total;
+            }
+        }
+
+        [BubbleDisplay(1, "Fortitude saves", 1)]
         public SavesRecord FortSaves => Saves[(int)SavingThrowType.Fortitude];
-        [BubbleDisplay(1, "Reflex saves", 1)]
+        [BubbleDisplay(2, "Reflex saves", 1)]
         public SavesRecord ReflexSaves => Saves[(int)SavingThrowType.Reflex];
-        [BubbleDisplay(2, "Will saves", 1)]
+        [BubbleDisplay(3, "Will saves", 1)]
         public SavesRecord WillSaves => Saves[(int)SavingThrowType.Will];
-        [BubbleDisplay(3, "Other saves", 1)]
+        [BubbleDisplay(4, "Other saves", 1)]
         public SavesRecord OtherSaves => Saves[(int)SavingThrowType.Unknown];
+
     }
 
     static class CountingDictionaryExtensions {
