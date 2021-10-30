@@ -1,3 +1,12 @@
+## Version 0.8.2
+ * Add hit/miss %
+
+## Version 0.8.1
+
+ * Fixed bug when going back to a save with no stats data (current stats data wasn't cleared)
+ * Fixed favourite spell/weapon not tracking correctly
+ * Added healing done stats
+
 ## Version 0.8.0
 
 * Added statistics

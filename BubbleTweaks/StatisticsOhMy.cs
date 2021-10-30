@@ -406,11 +406,11 @@ namespace BubbleTweaks {
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
     public class BubbleDisplay : Attribute {
         public readonly string Name;
-        public readonly int Order;
+        public readonly double Order;
         public readonly int Column;
 
 
-        public BubbleDisplay(int order, string name, int column = -1) {
+        public BubbleDisplay(double order, string name, int column = -1) {
             Order = order;
             Name = name;
             Column = column;
@@ -499,6 +499,9 @@ namespace BubbleTweaks {
             int percent = (int)(proportion * 100);
             return $"{percent}%";
         }
+        private static string GetRawAndPercent(int top, int bottom) {
+            return $"({GetPercent(top, bottom)})   {top}";
+        }
 
         [BubbleDisplay(0, "Party damage done (active)")]
         [JsonIgnore]
@@ -522,14 +525,19 @@ namespace BubbleTweaks {
         [BubbleTitle("Attacks")]
         [BubbleDisplay(2, "Attacks rolled")]
         public int AttacksTotal;
-
-        [BubbleDisplay(2, "Hits")]
         public int AttacksHit;
-        [BubbleDisplay(2, "Misses")]
         public int AttacksMissed;
-        [BubbleDisplay(2, "Critical Hits")]
+
+        [BubbleDisplay(2.1, "Hits")]
+        public string AttacksHitDisplay => GetRawAndPercent(AttacksHit, AttacksTotal);
+
+        [BubbleDisplay(2.11, "Critical Hits")]
         public int AttacksCrit;
-        [BubbleDisplay(2, "Critical Misses")]
+
+        [BubbleDisplay(2.2, "Misses")]
+        public string AttacksMissedDisplay => GetRawAndPercent(AttacksMissed, AttacksTotal);
+
+        [BubbleDisplay(2.21, "Critical Misses")]
         public int AttacksCriticallyMissed;
 
         public int AbilityDamageTaken;
