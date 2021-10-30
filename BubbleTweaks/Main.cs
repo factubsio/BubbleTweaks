@@ -197,6 +197,7 @@ namespace BubbleTweaks {
             PostPatchInitializer.Initialize();
             //SpeedTweaks.Install();
             //Crusade.Install();
+            StatisticsOhMy.Install();
 #else
             harmony.PatchAll();
             PostPatchInitializer.Initialize();

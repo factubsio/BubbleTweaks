@@ -31,6 +31,7 @@ using BubbleTweaks.Utilities;
 using Kingmaker.EntitySystem.Persistence;
 using System.IO;
 using System.Collections;
+using Kingmaker.UnitLogic.Abilities;
 
 namespace BubbleTweaks {
 
@@ -369,6 +370,8 @@ namespace BubbleTweaks {
                     var rawReader = new StringReader(raw);
                     var jsonReader = new JsonTextReader(rawReader);
                     GlobalRecord.Instance = serializer.Deserialize<GlobalRecord>(jsonReader);
+                } else {
+                    GlobalRecord.Instance = new GlobalRecord();
                 }
             });
             yield return null;
@@ -498,8 +501,10 @@ namespace BubbleTweaks {
         }
 
         [BubbleDisplay(0, "Party damage done (active)")]
+        [JsonIgnore]
         public string DamageDoneWhilePresentPercent => GetPercent(DamageDone, DamageDoneTotalWhilePresent);
         [BubbleDisplay(0, "Party damage done (overall)")]
+        [JsonIgnore]
         public string DamageDonePercent => GetPercent(DamageDone, GlobalRecord.Instance.TotalDamage);
 
         [BubbleDisplay(1, "Friendly fire")]
@@ -569,11 +574,23 @@ namespace BubbleTweaks {
         public int TotalCorruption;
         public int MaxCorruption;
 
+        public int HealingDoneTotalWhilePresent;
+
+        [BubbleDisplay(4, "Healing done")]
+        public int HealingDone;
+
+        [BubbleDisplay(4, "Party healing done (active)")]
         [JsonIgnore]
-        [BubbleDisplay(4, "Favourite weapon")]
+        public string HealingDoneWhilePresentPercent => GetPercent(HealingDone, HealingDoneTotalWhilePresent);
+        [BubbleDisplay(4, "Party healing done (overall)")]
+        [JsonIgnore]
+        public string HealingDonePercent => GetPercent(HealingDone, GlobalRecord.Instance.TotalHealing);
+
+        [JsonIgnore]
+        [BubbleDisplay(5, "Favourite weapon")]
         public string FavouriteWeapon => WeaponsUsed.OrderByDescending(kv => kv.Value).FirstOrDefault().Key;
         [JsonIgnore]
-        [BubbleDisplay(4, "Favourite spell")]
+        [BubbleDisplay(5, "Favourite spell")]
         public string FavouriteSpell => SpellsCast.OrderByDescending(kv => kv.Value).FirstOrDefault().Key;
 
         public Dictionary<string, int> SpellsCast = new();
@@ -592,7 +609,7 @@ namespace BubbleTweaks {
     static class CountingDictionaryExtensions {
         public static void Increment<T>(this Dictionary<T, int> dict, T key, int delta = 1) {
             if (dict.TryGetValue(key, out var val))
-                val++;
+                dict[key] = val + delta;
             else
                 dict[key] = delta;
         }
@@ -634,13 +651,14 @@ namespace BubbleTweaks {
 
         public int version = 1;
 
+        public int TotalHealing;
         public int TotalDamage;
         public int TotalDamageTaken;
 
         public static GlobalRecord Instance = new();
     }
 
-    class StatiscticsListener : IAttackHandler, IDamageHandler, IAttributeDamageHandler, IRollSkillCheckHandler, ITrapActivationHandler, IGlobalRulebookHandler<RuleSavingThrow> {
+    class StatiscticsListener : IAttackHandler, IDamageHandler, IAttributeDamageHandler, IRollSkillCheckHandler, ITrapActivationHandler, IGlobalRulebookHandler<RuleSavingThrow>, IAbilityExecutionProcessHandler, IHealingHandler {
 
         static CharacterRecord For(UnitEntityData unit) => GlobalRecord.Instance.ForCharacter(unit);
 
@@ -746,12 +764,34 @@ namespace BubbleTweaks {
 
             });
         }
+
+        public void HandleExecutionProcessStart(AbilityExecutionContext context) {
+        }
+
+        public void HandleExecutionProcessEnd(AbilityExecutionContext context) {
+            WhenFriend(context.Caster, record => {
+                record.SpellsCast.Increment(context.AbilityBlueprint.Name);
+            });
+        }
+
+        void IHealingHandler.HandleHealing(RuleHealDamage healDamage) {
+            if (!healDamage.Target.IsInCompanionRoster())
+                return;
+
+            WhenFriend(healDamage.Initiator, record => {
+                record.HealingDone += healDamage.Value;
+                GlobalRecord.Instance.TotalHealing += healDamage.Value;
+                CurrentParty(r => {
+                    r.HealingDoneTotalWhilePresent += healDamage.Value;
+                });
+            });
+        }
     }
 
     class StatisticsOhMy {
         internal static void Install() {
             if (!CharInfoWindowUtility.PagesOrderPC[UnitType.MainCharacter].Contains(CharInfoPageType_EXT.Statistics)) {
-                Main.Log("Inejcting enummm");
+                Main.Log("Injecting enums");
 
                 CharInfoWindowUtility.PagesOrderPC[UnitType.MainCharacter].Add(CharInfoPageType_EXT.Statistics);
                 CharInfoWindowUtility.PagesOrderPC[UnitType.Companion].Add(CharInfoPageType_EXT.Statistics);
