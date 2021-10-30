@@ -1,4 +1,7 @@
 ## Version 0.8.2
+ * Fix skill checks (not backdatable sorry)
+
+## Version 0.8.2
  * Add hit/miss %
 
 ## Version 0.8.1

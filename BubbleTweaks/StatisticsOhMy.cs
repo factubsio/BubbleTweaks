@@ -544,9 +544,9 @@ namespace BubbleTweaks {
 
 
         [BubbleTitle("Skill checks")]
-        [BubbleDisplay(3, "Skill checks passes")]
+        [BubbleDisplay(3, "Skill check passes")]
         public int SkillChecksPassed;
-        [BubbleDisplay(3, "Skill checks fails")]
+        [BubbleDisplay(3, "Skill check fails")]
         public int SkillChecksFailed;
 
         public SavesRecord[] Saves = new SavesRecord[Enum.GetValues(typeof(SavingThrowType)).Length];
@@ -666,7 +666,14 @@ namespace BubbleTweaks {
         public static GlobalRecord Instance = new();
     }
 
-    class StatiscticsListener : IAttackHandler, IDamageHandler, IAttributeDamageHandler, IRollSkillCheckHandler, ITrapActivationHandler, IGlobalRulebookHandler<RuleSavingThrow>, IAbilityExecutionProcessHandler, IHealingHandler {
+    class StatiscticsListener :
+        IAttackHandler, IDamageHandler, IHealingHandler, IAttributeDamageHandler,
+        IGlobalRulebookHandler<RuleSkillCheck>, IGlobalRulebookHandler<RulePartySkillCheck>,
+        ITrapActivationHandler,
+        IGlobalRulebookHandler<RuleSavingThrow>,
+        IAbilityExecutionProcessHandler {
+
+
 
         static CharacterRecord For(UnitEntityData unit) => GlobalRecord.Instance.ForCharacter(unit);
 
@@ -731,27 +738,11 @@ namespace BubbleTweaks {
             });
         }
 
-        void IRollSkillCheckHandler.HandlePartySkillCheckRolled(RulePartySkillCheck check) {
-            WhenFriend(check.Initiator, record => {
-                if (check.Success)
-                    record.SkillChecksPassed++;
-                else
-                    record.SkillChecksFailed++;
-            });
-        }
 
         void ITrapActivationHandler.HandleTrapActivation(UnitEntityData unit, TrapObjectView trap) {
             WhenFriend(unit, record => record.TrapsTriggered++);
         }
 
-        void IRollSkillCheckHandler.HandleUnitSkillCheckRolled(RuleSkillCheck check) {
-            WhenFriend(check.Initiator, record => {
-                if (check.Success)
-                    record.SkillChecksPassed++;
-                else
-                    record.SkillChecksFailed++;
-            });
-        }
 
         void IRulebookHandler<RuleSavingThrow>.OnEventAboutToTrigger(RuleSavingThrow evt) {
         }
@@ -794,6 +785,27 @@ namespace BubbleTweaks {
                 });
             });
         }
+
+        void IRulebookHandler<RuleSkillCheck>.OnEventDidTrigger(RuleSkillCheck check) {
+            WhenFriend(check.Initiator, record => {
+                if (check.Success)
+                    record.SkillChecksPassed++;
+                else
+                    record.SkillChecksFailed++;
+            });
+        }
+
+        void IRulebookHandler<RulePartySkillCheck>.OnEventDidTrigger(RulePartySkillCheck check) {
+            WhenFriend(check.Initiator, record => {
+                if (check.Success)
+                    record.SkillChecksPassed++;
+                else
+                    record.SkillChecksFailed++;
+            });
+        }
+
+        void IRulebookHandler<RuleSkillCheck>.OnEventAboutToTrigger(RuleSkillCheck evt) { } 
+        void IRulebookHandler<RulePartySkillCheck>.OnEventAboutToTrigger(RulePartySkillCheck evt) { }
     }
 
     class StatisticsOhMy {
