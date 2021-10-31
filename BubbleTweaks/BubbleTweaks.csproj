@@ -110,6 +110,11 @@
       <HintPath>D:\steamlib\steamapps\common\Pathfinder Second Adventure\Wrath_Data\Managed\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
@@ -167,6 +172,7 @@
     <Compile Include="Config\AddedContent.cs" />
     <Compile Include="Crusade.cs" />
     <Compile Include="Extensions\ExtentionMethods.cs" />
+    <Compile Include="LuckMeter.cs" />
     <Compile Include="MinorVisualTweaks.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="SaveGamePatch.cs" />

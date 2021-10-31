@@ -197,11 +197,13 @@ namespace BubbleTweaks {
             PostPatchInitializer.Initialize();
             //SpeedTweaks.Install();
             //Crusade.Install();
-            StatisticsOhMy.Install();
+            //StatisticsOhMy.Install();
+            LuckMeter.Install();
 #else
             harmony.PatchAll();
             PostPatchInitializer.Initialize();
             SpeedTweaks.Install();
+            LuckMeter.Install();
             Crusade.Install();
             StatisticsOhMy.Install();
 #endif
@@ -219,12 +221,8 @@ namespace BubbleTweaks {
             } else if (Input.GetKeyDown(KeyCode.B) && Shifting) {
                 modEntry.GetType().GetMethod("Reload", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(modEntry, new object[] { });
             } else if (Input.GetKeyDown(KeyCode.R) && Shifting) {
-                var serializer = new JsonSerializer();
-                serializer.Formatting = Formatting.Indented;
-                var writer = new StringWriter();
-                serializer.Serialize(writer, GlobalRecord.Instance);
-                writer.Flush();
-                Main.Log(writer.ToString());
+                Main.Log("HELLO");
+                LuckMeter.Show();
             }
 #endif
         }
@@ -234,7 +232,8 @@ namespace BubbleTweaks {
             harmony.UnpatchAll();
             //SpeedTweaks.Uninstall();
             //Crusade.Uninstall();
-            StatisticsOhMy.Uninstall();
+            //StatisticsOhMy.Uninstall();
+            LuckMeter.UnInstall();
 
             return true;
 
