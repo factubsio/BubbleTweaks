@@ -25,6 +25,7 @@ using Kingmaker.Blueprints;
 using Newtonsoft.Json;
 using System.IO;
 using System.Reflection;
+using Kingmaker.UI.MVVM._VM.Party;
 
 namespace BubbleTweaks {
 
@@ -47,6 +48,8 @@ namespace BubbleTweaks {
         public SettingsEntityFloat NonCombatCursorScale = new("bubbles.settings.game.cursor-scale.non-combat", 1.0f);
         public SettingsEntityEnum<AttackTextColor> CursorAttackTextColor = new("bubbles.settings.game.cursor-text-color", AttackTextColor.Default);
 
+        public SettingsEntityBool PartyViewWith8Slots = new("bubbles.settings.game.ui-party-view-eight", false, false, true);
+
         public UISettingsEntitySliderFloat TacticalCombatSpeedSlider;
         public UISettingsEntitySliderFloat InCombatSpeedSlider;
         public UISettingsEntitySliderFloat OutOfCombatSpeedSlider;
@@ -56,7 +59,18 @@ namespace BubbleTweaks {
         public UISettingsEntitySliderFloat NonCombatCursorScaleSlider;
         public UISettingsEntityDropdownEnum<AttackTextColor> CursorAttackTextColorDropdown;
 
+        public UISettingsEntityBool PartyViewWith8SlotsToggle;
+
         private BubbleSettings() { }
+
+        public static UISettingsEntityBool MakeToggle(string key, string name, string tooltip) {
+            var toggle = ScriptableObject.CreateInstance<UISettingsEntityBool>();
+            toggle.m_Description = Helpers.CreateString($"{key}.description", name);
+            toggle.m_TooltipDescription = Helpers.CreateString($"{key}.tooltip-description", tooltip);
+            toggle.DefaultValue = false;
+            toggle.m_ShowVisualConnection = true;
+            return toggle;
+        }
 
         public static V MakeEnumDropdown<V, T>(string key, string name, string tooltip) where T: Enum where V : UISettingsEntityDropdownEnum<T> {
             var dropdown = ScriptableObject.CreateInstance<V>();
@@ -113,7 +127,7 @@ namespace BubbleTweaks {
 
             try {
 
-                CombatCursorScaleSlider = MakeSliderFloat("settings.game.cursor-scale.combat", "Scale the cursor for combat actions (e.g. attack, step, ranged attack", "Scale the cursor for combat actions (e.g. attack, step, ranged attack", 0.25f, 5.0f, 0.25f);
+                CombatCursorScaleSlider = MakeSliderFloat("settings.game.cursor-scale.combat", "Scale the cursor for combat actions (e.g. attack, step, ranged attack)", "Scale the cursor for combat actions (e.g. attack, step, ranged attack)", 0.25f, 5.0f, 0.25f);
                 CombatCursorScaleSlider.LinkSetting(CombatCursorScale);
             } catch (Exception ex) {
                 Main.Error(ex, "making combat cursor scale");
@@ -132,6 +146,13 @@ namespace BubbleTweaks {
             } catch (Exception ex) {
                 Main.Error(ex, "making combat text color");
             }
+
+            try {
+                PartyViewWith8SlotsToggle = MakeToggle("settings.game.ui-party-view-replacement-eight", "Expanded party view (eight slots)", "Replace the Owlcat party view at the bottom of the screen with a custom version that can show eight characters without scrolling\n<size=150%><b>Requires a full game restart</b></size>");
+                PartyViewWith8SlotsToggle.LinkSetting(PartyViewWith8Slots);
+            } catch (Exception ex) {
+                Main.Error(ex, "making enhanced party view toggle");
+            }
         }
 
         private static readonly BubbleSettings instance = new();
@@ -140,7 +161,7 @@ namespace BubbleTweaks {
 
 
     [HarmonyPatch(typeof(UISettingsManager), "Initialize")]
-    static class SettingsInjector {
+    public static class SettingsInjector {
         static bool Initialized = false;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "harmony patch")]
@@ -163,14 +184,22 @@ namespace BubbleTweaks {
                     BubbleSettings.Instance.CombatCursorScaleSlider,
                     BubbleSettings.Instance.NonCombatCursorScaleSlider,
                     BubbleSettings.Instance.CursorAttackTextColorDropdown));
+
+            Game.Instance.UISettingsManager.m_GameSettingsList.Add(
+                BubbleSettings.MakeSettingsGroup("bubble.ui-tweaks", "Bubble UI tweaks",
+                    BubbleSettings.Instance.PartyViewWith8SlotsToggle));
+
+            if (BubbleSettings.Instance.PartyViewWith8Slots.GetValue()) {
+                PartyVM_Patches.Repatch();
+            }
         }
     }
 
 #if DEBUG
     [EnableReloading]
 #endif
-    static class Main {
-        private static Harmony harmony;
+    public static class Main {
+        public static Harmony harmony;
         public static bool Enabled;
         internal static string ModPath;
 
@@ -203,9 +232,9 @@ namespace BubbleTweaks {
             harmony.PatchAll();
             PostPatchInitializer.Initialize();
             SpeedTweaks.Install();
-            LuckMeter.Install();
             Crusade.Install();
             StatisticsOhMy.Install();
+            LuckMeter.Install();
 #endif
 
 
@@ -217,7 +246,6 @@ namespace BubbleTweaks {
 
 #if DEBUG
             if (Input.GetKeyDown(KeyCode.I) && Shifting) {
-                Game.ResetUI();
             } else if (Input.GetKeyDown(KeyCode.B) && Shifting) {
                 modEntry.GetType().GetMethod("Reload", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(modEntry, new object[] { });
             } else if (Input.GetKeyDown(KeyCode.R) && Shifting) {
@@ -228,6 +256,8 @@ namespace BubbleTweaks {
         }
 
         static bool OnUnload(UnityModManager.ModEntry modEntry) {
+            Main.Log("WARNING: UNLOADING");
+            Main.Log("WARNING: UNLOADING");
 
             harmony.UnpatchAll();
             //SpeedTweaks.Uninstall();

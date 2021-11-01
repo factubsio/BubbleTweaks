@@ -32,6 +32,7 @@ using Kingmaker.EntitySystem.Persistence;
 using System.IO;
 using System.Collections;
 using Kingmaker.UnitLogic.Abilities;
+using Kingmaker.GameModes;
 
 namespace BubbleTweaks {
 
@@ -115,6 +116,7 @@ namespace BubbleTweaks {
                 e.preferredWidth = 0;
             });
 
+
             var linePrefab = new GameObject("line", typeof(RectTransform));
             linePrefab.MakeComponent<Image>(img => {
                 img.sprite = AssetLoader.LoadInternal("sprites", "line.png", new Vector2Int(128, 8));
@@ -126,10 +128,14 @@ namespace BubbleTweaks {
             });
             linePrefab.transform.localScale = new Vector3(1, 0.2f, 1);
 
+
             var titlePrefab = GameObject.Instantiate(LabelPrefab).GetComponent<TextMeshProUGUI>();
+            Main.Log("ERROR: Null heading prefab");
             titlePrefab.alignment = TextAlignmentOptions.Left;
+            Main.Log("ERROR: Null heading prefab");
             titlePrefab.fontStyle = FontStyles.Bold;
             //titlePrefab.gameObject.AddComponent<LayoutElement>().minWidth = 200;
+
 
             var headingPrefab = GameObject.Instantiate(HeadingPrefab).GetComponent<TextMeshProUGUI>();
             headingPrefab.alignment = TextAlignmentOptions.Left;
@@ -265,9 +271,29 @@ namespace BubbleTweaks {
 
         private readonly Once MakeUI = new();
 
+        private Transform ServiceWindow {
+            get {
+                Main.Log($"current mode: {Game.Instance.CurrentMode}");
+                if (Game.Instance.UI.GlobalMapCanvas != null) {
+                    return Game.Instance.UI.GlobalMapCanvas.transform.Find("ServiceWindowsConfig");
+                } else {
+                    return Game.Instance.UI.Canvas.transform.Find("ServiceWindowsPCView");
+                }
+            }
+        }
 
-        private GameObject LabelPrefab => Game.Instance.UI.Canvas.transform.Find("ServiceWindowsPCView/CharacterInfoPCView/CharacterScreen/LevelClassScores/RaceGenderAlighment/Alignment/Alignment").gameObject;
-        private GameObject HeadingPrefab => Game.Instance.UI.Canvas.transform.Find("ServiceWindowsPCView/CharacterInfoPCView/CharacterScreen/NamePortrait/CharName/CharacterName").gameObject;
+        private GameObject LabelPrefab {
+            get {
+                Main.Log($"service window: {ServiceWindow != null}");
+                return ServiceWindow.Find("CharacterInfoPCView/CharacterScreen/LevelClassScores/RaceGenderAlighment/Alignment/Alignment").gameObject;
+            }
+        }
+        private GameObject HeadingPrefab {
+            get {
+                Main.Log($"service window: {ServiceWindow != null}");
+                return ServiceWindow.Find("CharacterInfoPCView/CharacterScreen/NamePortrait/CharName/CharacterName").gameObject;
+            }
+        }
 
         private void UpdateCharacter() {
             var record = GlobalRecord.Instance.ForCharacter(ViewModel.Unit.Value);
@@ -790,6 +816,9 @@ namespace BubbleTweaks {
         }
 
         void IRulebookHandler<RuleSkillCheck>.OnEventDidTrigger(RuleSkillCheck check) {
+            if (Game.Instance.CurrentMode == GameModeType.GlobalMap)
+                return;
+
             WhenFriend(check.Initiator, record => {
                 if (check.Success)
                     record.SkillChecksPassed++;
@@ -799,6 +828,9 @@ namespace BubbleTweaks {
         }
 
         void IRulebookHandler<RulePartySkillCheck>.OnEventDidTrigger(RulePartySkillCheck check) {
+            if (Game.Instance.CurrentMode == GameModeType.GlobalMap)
+                return;
+
             WhenFriend(check.Initiator, record => {
                 if (check.Success)
                     record.SkillChecksPassed++;

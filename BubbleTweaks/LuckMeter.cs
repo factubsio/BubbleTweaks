@@ -22,6 +22,7 @@ using Kingmaker.UI.MVVM._PCView.Party;
 using Kingmaker.UI;
 using Owlcat.Runtime.UI.Controls.Selectable;
 using Owlcat.Runtime.UI.Controls.Other;
+using System.Reflection;
 
 namespace BubbleTweaks {
     public class LuckMeter {
@@ -205,6 +206,10 @@ namespace BubbleTweaks {
 
         [HarmonyPatch("Initialize"), HarmonyPrefix]
         static void Initialize(PartyPCView __instance) {
+            if (PartyVM_Patches.SupportedSlots == 6)
+                return;
+
+            Main.Log("INSTALLING BUBBLE GROUP PANEL");
 
             if (hudBackground8 == null) {
                 hudBackground8 = AssetLoader.LoadInternal("sprites", "UI_HudBackgroundCharacter_8.png", new Vector2Int(1746, 298));
@@ -232,10 +237,6 @@ namespace BubbleTweaks {
                 GameObject view = toTweak[i];
 
                 var viewRect = view.transform as RectTransform;
-
-                //var anchorPos = viewRect.anchoredPosition;
-                //anchorPos.y += 20;
-                //viewRect.anchoredPosition = anchorPos;
 
                 var pos = viewRect.localPosition;
                 pos.x = leadingEdge + i * itemWidth;
@@ -268,15 +269,17 @@ namespace BubbleTweaks {
                 (view.transform.Find("Frame/Selected/Mark") as RectTransform).anchoredPosition = new Vector2(0, 94);
 
                 var buffRect = view.transform.Find("BuffMain") as RectTransform;
-                buffRect.sizeDelta = new Vector2(-10, 22);
+
+                buffRect.sizeDelta = new Vector2(-8, 24);
                 buffRect.pivot = new Vector2(0, 0);
                 buffRect.anchorMin = new Vector2(0, 1);
                 buffRect.anchorMax = new Vector2(1, 1);
-                buffRect.anchoredPosition = new Vector2(6, -3);
+                buffRect.anchoredPosition = new Vector2(4, -4);
                 buffRect.Edit<GridLayoutGroupWorkaround>(g => {
                     g.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+                    g.padding.top = 2;
                 });
-                buffRect.gameObject.AddComponent<Image>().color = Color.black;
+                buffRect.gameObject.AddComponent<Image>().color = new Color(.05f, .05f, .05f);
 
                 var buffHover = buffRect.Find("BuffTriggerNotification").GetComponent<OwlcatSelectable>();
 
@@ -291,24 +294,6 @@ namespace BubbleTweaks {
             }
         }
     }
-
-#if false
-    this.Clear();
-      bool flag = this.ViewModel.Buffs.Count > 6;
-      this.m_AdditionalTrigger.gameObject.SetActive(flag);
-      int num = 0;
-      foreach (BuffVM buff in (Collection<BuffVM>) this.ViewModel.Buffs)
-      {
-        BuffPCView widget = WidgetFactory.GetWidget<BuffPCView>(this.m_BuffView);
-        widget.Bind(buff);
-        if (flag && num >= 5)
-          widget.transform.SetParent((Transform) this.m_AdditionalContainer, false);
-        else
-          widget.transform.SetParent((Transform) this.m_MainContainer, false);
-        ++num;
-        this.m_BuffList.Add(widget);
-      }
-    #endif
 
     [HarmonyPatch(typeof(UnitBuffPartPCView))]
     static class UnitBuffPartPCView_Patches {
@@ -339,6 +324,9 @@ namespace BubbleTweaks {
 
         [HarmonyPatch("DrawBuffs"), HarmonyPostfix]
         static void DrawBuffs(UnitBuffPartPCView __instance) {
+            if (PartyVM_Patches.SupportedSlots == 6)
+                return;
+
             if (__instance.ViewModel.Buffs.Count <= 6)
                 return;
 
@@ -379,17 +367,21 @@ namespace BubbleTweaks {
         }
     }
 
-    [HarmonyPatch(typeof(PartyVM))]
-    static class PartyVM_Patches {
+    //[HarmonyPatch(typeof(PartyVM))]
+    public static class PartyVM_Patches {
 
-        [HarmonyTranspiler]
-        [HarmonyPatch("set_StartIndex")]
+        public static int SupportedSlots = 6;
+
+        private static int WantedSlots = 6;
+
+        //[HarmonyTranspiler]
+        //[HarmonyPatch("set_StartIndex")]
         static IEnumerable<CodeInstruction> set_StartIndex(IEnumerable<CodeInstruction> instructions) {
             return ConvertConstants(instructions, 8);
         }
 
-        [HarmonyTranspiler]
-        [HarmonyPatch(MethodType.Constructor)]
+        //[HarmonyTranspiler]
+        //[HarmonyPatch(MethodType.Constructor)]
         static IEnumerable<CodeInstruction> _ctor(IEnumerable<CodeInstruction> instructions) {
             return ConvertConstants(instructions, 8);
         }
@@ -419,6 +411,72 @@ namespace BubbleTweaks {
                 else
                     yield return ins;
             }
+        }
+
+
+        private static readonly BubblePatch Patch_ctor = BubblePatch.FirstConstructor(typeof(PartyVM), typeof(PartyVM_Patches));
+        private static readonly BubblePatch Patch_set_StartIndex = BubblePatch.Setter(typeof(PartyVM), typeof(PartyVM_Patches), "StartIndex");
+
+        public static void Repatch() {
+            Main.Log("Repatching PartyVM");
+            Main.Log(StackTraceUtility.ExtractStackTrace());
+
+            if (BubbleSettings.Instance.PartyViewWith8Slots.GetValue())
+                WantedSlots = 8;
+            else
+                WantedSlots = 6;
+
+            if (SupportedSlots == WantedSlots)
+                return;
+
+            Patch_ctor.Revert();
+            Patch_set_StartIndex.Revert();
+
+            if (WantedSlots == 6)
+                return;
+
+            SupportedSlots = 8;
+
+            Patch_ctor.Apply();
+            Patch_set_StartIndex.Apply();
+        }
+    }
+
+    public class BubblePatch {
+        public MethodBase Original;
+        public HarmonyMethod Patch;
+        public bool IsPatched = false;
+
+        public BubblePatch(MethodBase target, Type patcher, string name) {
+            Patch = new HarmonyMethod(patcher, name);
+            Original = target;
+        }
+
+        public static BubblePatch FirstConstructor(Type target, Type patcher) {
+            return new BubblePatch(target.GetConstructors().First(), patcher, "_ctor");
+        }
+        public static BubblePatch Setter(Type target, Type patcher, string propertyName) {
+            return new BubblePatch(target.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).SetMethod, patcher, $"set_{propertyName}");
+        }
+        public static BubblePatch Getter(Type target, Type patcher, string propertyName) {
+            return new BubblePatch(target.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).GetMethod, patcher, $"get_{propertyName}");
+        }
+        public static BubblePatch Method(Type target, Type patcher, string name) {
+            return new BubblePatch(target.GetMethod(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance), patcher, name);
+        }
+
+        public void Revert() {
+            if (!IsPatched)
+                return;
+
+            Main.harmony.Unpatch(Original, Patch.method);
+            IsPatched = false;
+        }
+        public void Apply() {
+            if (IsPatched)
+                throw new Exception("Trying to apply a patch that is already applied");
+            Main.harmony.Patch(Original, null, null, Patch, null);
+            IsPatched = true;
         }
     }
 
