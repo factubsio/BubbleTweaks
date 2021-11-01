@@ -1,3 +1,16 @@
+## Version 0.9.1
+Statistics view works on global map
+ENHANCED PARTY VIEW:
+	Enable in settings, requires a game restart when you change
+	View eight characters at once
+	Rejigged buff view
+
+
+## Version 0.9.0
+Started LuckMeted (not enabled yet)
+Various tweaks (handwave)
+
+
 ## Version 0.8.4
  * Fix CRITICAL bug where the load routine would keep a handle to the save, so subsequents saves to the same file would fail with "Saving is Impossible", sorry.
  * Add 'all saves'
