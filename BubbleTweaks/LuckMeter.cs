@@ -23,6 +23,7 @@ using Kingmaker.UI;
 using Owlcat.Runtime.UI.Controls.Selectable;
 using Owlcat.Runtime.UI.Controls.Other;
 using System.Reflection;
+using Kingmaker.Blueprints.Root;
 
 namespace BubbleTweaks {
     public class LuckMeter {
@@ -324,45 +325,54 @@ namespace BubbleTweaks {
 
         [HarmonyPatch("DrawBuffs"), HarmonyPostfix]
         static void DrawBuffs(UnitBuffPartPCView __instance) {
-            if (PartyVM_Patches.SupportedSlots == 6)
-                return;
+            try {
+                if (PartyVM_Patches.SupportedSlots == 6)
+                    return;
 
-            if (__instance.ViewModel.Buffs.Count <= 6)
-                return;
+                if (__instance.ViewModel.Buffs.Count <= 6)
+                    return;
 
-            var main = __instance.m_MainContainer.transform;
-            var overflow= __instance.m_AdditionalContainer.transform;
+                var main = __instance.m_MainContainer.transform;
+                var overflow = __instance.m_AdditionalContainer.transform;
 
-            int[] badButShown = new int[5];
-            int[] goodButHidden = new int[5];
-            int nextShown = 0;
-            int nextHidden = 0;
+                int[] badButShown = new int[5];
+                int[] goodButHidden = new int[5];
+                int nextShown = 0;
+                int nextHidden = 0;
 
-            for (int i = 0; i < __instance.m_BuffList.Count; i++) {
-                var buff = __instance.m_BuffList[i].ViewModel.Buff;
-                if (nextShown < 5 && Dreamwork.Contains(buff.Blueprint.AssetGuid.m_Guid)) {
-                    badButShown[nextShown++] = i;
-                } else if (nextHidden < 5 && __instance.m_BuffList[i].transform.parent == overflow) {
-                    goodButHidden[nextHidden++] = i;
+                for (int i = 0; i < __instance.m_BuffList.Count; i++) {
+                    var buff = __instance.m_BuffList[i].ViewModel.Buff;
+                    if (nextShown < 5 && Dreamwork.Contains(buff.Blueprint.AssetGuid.m_Guid)) {
+                        badButShown[nextShown++] = i;
+                    } else if (nextHidden < 5 && __instance.m_BuffList[i].transform.parent == overflow) {
+                        goodButHidden[nextHidden++] = i;
+                    }
                 }
-            }
-            if (nextShown == 0)
-                return;
 
-            if (nextHidden == 0 || nextShown == 0)
-                return;
+                if (nextHidden == 0 || nextShown == 0)
+                    return;
 
-            Vector3 overflowScale = __instance.m_BuffList[goodButHidden[0]].transform.localScale;
-            Vector3 mainScale = __instance.m_BuffList[badButShown[0]].transform.localScale;
+                Vector3 overflowScale = __instance.m_BuffList[goodButHidden[0]].transform.localScale;
+                Vector3 mainScale = __instance.m_BuffList[badButShown[0]].transform.localScale;
 
-            while (nextHidden > 0 && nextShown > 0) {
-                nextHidden--;
-                nextShown--;
 
-                __instance.m_BuffList[badButShown[nextShown]].transform.SetParent(overflow);
-                __instance.m_BuffList[badButShown[nextShown]].transform.localScale = overflowScale;
-                __instance.m_BuffList[goodButHidden[nextHidden]].transform.SetParent(main);
-                __instance.m_BuffList[goodButHidden[nextHidden]].transform.localScale = mainScale;
+                while (nextHidden > 0 && nextShown > 0) {
+                    nextHidden--;
+                    nextShown--;
+
+                    __instance.m_BuffList[badButShown[nextShown]].transform.SetParent(overflow);
+                    __instance.m_BuffList[badButShown[nextShown]].transform.localScale = overflowScale;
+                    __instance.m_BuffList[goodButHidden[nextHidden]].transform.SetParent(main);
+                    __instance.m_BuffList[goodButHidden[nextHidden]].transform.localScale = mainScale;
+                }
+
+                while (main.childCount > 6) {
+                    var toSwap = main.transform.GetChild(6);
+                    toSwap.transform.SetParent(overflow);
+                    toSwap.localScale = overflowScale;
+                }
+            } catch (Exception ex) {
+                Main.Error(ex, "buffling");
             }
         }
     }

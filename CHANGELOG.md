@@ -1,3 +1,7 @@
+## Version 0.9.3
+Fixes buff overflow in enhanced party view
+Don't count skill checks on the global map for statistics
+
 ## Version 0.9.1
 Statistics view works on global map
 ENHANCED PARTY VIEW:

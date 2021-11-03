@@ -816,7 +816,7 @@ namespace BubbleTweaks {
         }
 
         void IRulebookHandler<RuleSkillCheck>.OnEventDidTrigger(RuleSkillCheck check) {
-            if (Game.Instance.CurrentMode == GameModeType.GlobalMap)
+            if (Game.Instance.CurrentMode == GameModeType.GlobalMap || Game.Instance.UI.GlobalMapCanvas != null)
                 return;
 
             WhenFriend(check.Initiator, record => {
@@ -828,7 +828,7 @@ namespace BubbleTweaks {
         }
 
         void IRulebookHandler<RulePartySkillCheck>.OnEventDidTrigger(RulePartySkillCheck check) {
-            if (Game.Instance.CurrentMode == GameModeType.GlobalMap)
+            if (Game.Instance.CurrentMode == GameModeType.GlobalMap || Game.Instance.UI.GlobalMapCanvas != null)
                 return;
 
             WhenFriend(check.Initiator, record => {
