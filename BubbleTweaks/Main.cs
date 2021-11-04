@@ -102,6 +102,7 @@ namespace BubbleTweaks {
 
         public static UISettingsGroup MakeSettingsGroup(string key, string name, params UISettingsEntityBase[] settings) {
             UISettingsGroup group = ScriptableObject.CreateInstance<UISettingsGroup>();
+            group.name = key;
             group.Title = Helpers.CreateString(key, name);
 
             group.SettingsList = settings;
@@ -109,7 +110,12 @@ namespace BubbleTweaks {
             return group;
         }
 
+        private bool Initialized = false;
+
         public void Initialize() {
+            if (Initialized) return;
+            Initialized = true;
+
             TacticalCombatSpeedSlider = MakeSliderFloat("settings.game.tactical.time-scale", "Increase tactical combat animation speed", "Speeds up the animation speed of the all characters in tactical battle mode.", 1, 10, 0.1f);
             TacticalCombatSpeedSlider.LinkSetting(TacticalCombatSpeed);
 
@@ -162,13 +168,11 @@ namespace BubbleTweaks {
 
     [HarmonyPatch(typeof(UISettingsManager), "Initialize")]
     public static class SettingsInjector {
-        static bool Initialized = false;
-
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "harmony patch")]
         static void Postfix() {
-            if (Initialized) return;
-            Initialized = true;
-            Main.LogHeader("Injecting settings");
+            if (Game.Instance.UISettingsManager.m_GameSettingsList.Any(group => group.name?.StartsWith("bubble") ?? false)) {
+                return;
+            }
 
             BubbleSettings.Instance.Initialize();
 

@@ -1,3 +1,6 @@
+## Version 0.9.4
+Settings should be less shy
+
 ## Version 0.9.3
 Fixes buff overflow in enhanced party view
 Don't count skill checks on the global map for statistics
