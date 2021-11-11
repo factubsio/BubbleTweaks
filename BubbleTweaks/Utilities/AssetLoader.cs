@@ -12,7 +12,7 @@ namespace BubbleTweaks.Utilities {
             public static string icons_folder = "";
             public static Sprite Create(string filePath, Vector2Int size) {
                 var bytes = File.ReadAllBytes(icons_folder + filePath);
-                var texture = new Texture2D(size.x, size.y, TextureFormat.DXT5, false);
+                var texture = new Texture2D(size.x, size.y, TextureFormat.ARGB32, false);
                 _ = texture.LoadImage(bytes);
                 return Sprite.Create(texture, new Rect(0, 0, size.x, size.y), new Vector2(0, 0));
             }

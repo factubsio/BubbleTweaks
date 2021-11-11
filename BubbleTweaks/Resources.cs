@@ -55,5 +55,11 @@ namespace BubbleTweaks {
                 Main.Log($"Asset ID: {assetId} already in use by: {loadedBlueprint.name}");
             }
         }
+
+        public static void Uninstall() {
+            foreach (var bp in ModBlueprints.Values) {
+                ResourcesLibrary.BlueprintsCache.RemoveCachedBlueprint(bp.AssetGuid);
+            }
+        }
     }
 }

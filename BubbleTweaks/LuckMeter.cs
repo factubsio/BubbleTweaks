@@ -34,7 +34,7 @@ namespace BubbleTweaks {
             EventBus.Subscribe(checker);
         }
 
-        public static void UnInstall() {
+        public static void Uninstall() {
             EventBus.Unsubscribe(checker);
             if (Root != null)
                 GameObject.Destroy(Root);

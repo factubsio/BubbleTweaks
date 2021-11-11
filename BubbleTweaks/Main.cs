@@ -26,6 +26,9 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Reflection;
 using Kingmaker.UI.MVVM._VM.Party;
+using Kingmaker.UI.Overtip;
+using Kingmaker.UI._ConsoleUI.Overtips;
+using System.Reflection.Emit;
 
 namespace BubbleTweaks {
 
@@ -231,6 +234,7 @@ namespace BubbleTweaks {
             //SpeedTweaks.Install();
             //Crusade.Install();
             //StatisticsOhMy.Install();
+            MinorVisualTweaks.Install();
             LuckMeter.Install();
 #else
             harmony.PatchAll();
@@ -238,6 +242,7 @@ namespace BubbleTweaks {
             SpeedTweaks.Install();
             Crusade.Install();
             StatisticsOhMy.Install();
+            MinorVisualTweaks.Install();
             LuckMeter.Install();
 #endif
 
@@ -250,15 +255,16 @@ namespace BubbleTweaks {
 
 #if DEBUG
             if (Input.GetKeyDown(KeyCode.I) && Shifting) {
-            } else if (Input.GetKeyDown(KeyCode.B) && Shifting) {
+            } else if (Input.GetKeyDown(KeyCode.F) && Shifting) {
                 modEntry.GetType().GetMethod("Reload", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(modEntry, new object[] { });
             } else if (Input.GetKeyDown(KeyCode.R) && Shifting) {
-                Main.Log("HELLO");
-                LuckMeter.Show();
+                //Main.Log("HELLO");
+                //LuckMeter.Show();
             }
 #endif
         }
 
+#if DEBUG
         static bool OnUnload(UnityModManager.ModEntry modEntry) {
             Main.Log("WARNING: UNLOADING");
             Main.Log("WARNING: UNLOADING");
@@ -267,11 +273,14 @@ namespace BubbleTweaks {
             //SpeedTweaks.Uninstall();
             //Crusade.Uninstall();
             //StatisticsOhMy.Uninstall();
-            LuckMeter.UnInstall();
+            LuckMeter.Uninstall();
+            //MinorVisualTweaks.Uninstall();
+            Resources.Uninstall();
 
             return true;
 
         }
+#endif
 
         internal static void LogPatch(string v, object coupDeGraceAbility) {
             throw new NotImplementedException();
@@ -308,4 +317,6 @@ namespace BubbleTweaks {
             }
         }
     }
+
+  
 }

@@ -736,7 +736,6 @@ namespace BubbleTweaks {
                     }
                 }
             });
-            throw new NotImplementedException();
         }
 
         void IAttributeDamageHandler.HandleAttributeDamage(UnitEntityData unit, StatType attribute, int oldDamage, int newDamage, bool drain) {
@@ -781,11 +780,11 @@ namespace BubbleTweaks {
                 record.Saves.ModifyStruct((int)evt.Type, (ref SavesRecord save) => {
                     if (evt.IsPassed) {
                         save.Passed++;
-                        if (!evt.AutoPass && evt.D20.Result == 20)
+                        if (!evt.AutoPass && evt.D20?.Result == 20)
                             save.PassedCrit++;
                     } else {
                         save.Failed++;
-                        if (evt.D20.Result == 1)
+                        if (evt.D20?.Result == 1)
                             save.FailedCrit++;
                     }
                 });
