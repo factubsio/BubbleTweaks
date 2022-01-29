@@ -24,6 +24,7 @@ using Owlcat.Runtime.UI.Controls.Selectable;
 using Owlcat.Runtime.UI.Controls.Other;
 using System.Reflection;
 using Kingmaker.Blueprints.Root;
+using Owlcat.Runtime.UI.Controls.Button;
 
 namespace BubbleTweaks {
     public class LuckMeter {
@@ -222,6 +223,20 @@ namespace BubbleTweaks {
             List<GameObject> toTweak = new(currentViews.Select(view => view.gameObject));
             for (int i = currentViews.Length; i < 8; i++) {
                 var newView = GameObject.Instantiate(currentViews[0].gameObject, __instance.transform);
+
+                var animations = newView.transform.Find("Levelups/LevelUp").GetComponentsInChildren<DOTweenAnimation>();
+                foreach (var anim in animations) {
+                    if (anim.animationType == DG.Tweening.Core.DOTweenAnimationType.Fade && anim.targetType == DG.Tweening.Core.TargetType.Image) {
+                        var image = anim.target as Image;
+                        float alpha = 1;
+                        if (image.GetComponent<OwlcatButton>() != null)
+                            alpha = 0.4118f;
+                        image.color = new Color(image.color.r, image.color.g, image.color.b, alpha);
+                        GameObject.Destroy(anim);
+                    }
+                }
+
+
                 toTweak.Add(newView);
                 __instance.m_Characters.Add(newView.GetComponent<PartyCharacterPCView>());
             }
@@ -428,9 +443,6 @@ namespace BubbleTweaks {
         private static readonly BubblePatch Patch_set_StartIndex = BubblePatch.Setter(typeof(PartyVM), typeof(PartyVM_Patches), "StartIndex");
 
         public static void Repatch() {
-            Main.Log("Repatching PartyVM");
-            Main.Log(StackTraceUtility.ExtractStackTrace());
-
             if (BubbleSettings.Instance.PartyViewWith8Slots.GetValue())
                 WantedSlots = 8;
             else

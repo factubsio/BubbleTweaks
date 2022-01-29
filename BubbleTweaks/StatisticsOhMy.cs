@@ -47,11 +47,13 @@ namespace BubbleTweaks {
     static class CharacterInfoVM_Patches {
         [HarmonyPostfix, HarmonyPatch(MethodType.Constructor)]
         static void _ctor(CharacterInfoVM __instance) {
+            Main.LogDebug("modifying constructor");
             __instance.ComponentVMs[CharInfoComponentType_EXT.Statistics] = new();
         }
 
         [HarmonyPostfix, HarmonyPatch("CreateVM")]
         static void CreateVM(CharInfoComponentType type, CharacterInfoVM __instance, ref CharInfoComponentVM __result) {
+            Main.LogDebug("modifying CreateVM: " + type);
             if (type == CharInfoComponentType_EXT.Statistics)
                 __result = new CharInfoStatisticsVM(__instance.UnitDescriptor);
         }
@@ -60,10 +62,13 @@ namespace BubbleTweaks {
 
     [HarmonyPatch(typeof(CharInfoWindowUtility))]
     static class CharInfoWindowUtility_Patches {
-        [HarmonyPatch("GetPageLabel"), HarmonyPostfix]
+        [HarmonyPatch(nameof(CharInfoWindowUtility.GetPageLabel)), HarmonyPostfix]
         static void GetPageLabel(CharInfoPageType page, ref string __result) {
-            if (page == CharInfoPageType_EXT.Statistics)
+            Main.LogDebug("GetPageLabel: " + page);
+            if (page == CharInfoPageType_EXT.Statistics) {
+                Main.LogDebug("Intercepting and returning label title for stats page");
                 __result = "Statistics";
+            }
         }
     }
 
@@ -109,7 +114,7 @@ namespace BubbleTweaks {
         private List<StatDisplay<CharacterRecord>> Stats = new();
 
         private void TryBuildUI() {
-            Main.Log("Building view");
+            Main.LogDebug("Building view");
             var spacer = new GameObject("spacer", typeof(RectTransform));
             spacer.MakeComponent<LayoutElement>(e => {
                 e.minWidth = 0;
@@ -135,7 +140,6 @@ namespace BubbleTweaks {
             Main.Log("ERROR: Null heading prefab");
             titlePrefab.fontStyle = FontStyles.Bold;
             //titlePrefab.gameObject.AddComponent<LayoutElement>().minWidth = 200;
-
 
             var headingPrefab = GameObject.Instantiate(HeadingPrefab).GetComponent<TextMeshProUGUI>();
             headingPrefab.alignment = TextAlignmentOptions.Left;
@@ -273,7 +277,7 @@ namespace BubbleTweaks {
 
         private Transform ServiceWindow {
             get {
-                Main.Log($"current mode: {Game.Instance.CurrentMode}");
+                Main.LogDebug($"current mode: {Game.Instance.CurrentMode}");
                 if (Game.Instance.UI.GlobalMapCanvas != null) {
                     return Game.Instance.UI.GlobalMapCanvas.transform.Find("ServiceWindowsConfig");
                 } else {
@@ -284,13 +288,13 @@ namespace BubbleTweaks {
 
         private GameObject LabelPrefab {
             get {
-                Main.Log($"service window: {ServiceWindow != null}");
+                Main.LogDebug($"service window: {ServiceWindow != null}");
                 return ServiceWindow.Find("CharacterInfoPCView/CharacterScreen/LevelClassScores/RaceGenderAlighment/Alignment/Alignment").gameObject;
             }
         }
         private GameObject HeadingPrefab {
             get {
-                Main.Log($"service window: {ServiceWindow != null}");
+                Main.LogDebug($"service window: {ServiceWindow != null}");
                 return ServiceWindow.Find("CharacterInfoPCView/CharacterScreen/NamePortrait/CharName/CharacterName").gameObject;
             }
         }
@@ -302,11 +306,17 @@ namespace BubbleTweaks {
         }
 
         public override void RefreshView() {
-            base.RefreshView();
 
-            MakeUI.Run(TryBuildUI);
+            try {
 
-            Main.Safely(UpdateCharacter);
+                base.RefreshView();
+
+                MakeUI.Run(TryBuildUI);
+
+                Main.Safely(UpdateCharacter);
+            } catch (Exception ex) {
+                Main.Error(ex);
+            }
         }
 
 
@@ -318,23 +328,23 @@ namespace BubbleTweaks {
         static void BindViewImplementation(CharacterInfoPCView __instance) {
             try {
                 if (!__instance.m_ComponentViews.ContainsKey(CharInfoComponentType_EXT.Statistics)) {
-                    Main.Log($"abilities parent: { __instance.m_AbilitiesView.transform.parent.name}");
+                    Main.LogDebug($"abilities parent: { __instance.m_AbilitiesView.transform.parent.name}");
                     var prefab = __instance.m_AbilitiesView.gameObject;
-                    Main.Log("got prefab");
+                    Main.LogDebug("got prefab");
 
                     var statsGameObject = GameObject.Instantiate(prefab, prefab.transform.parent);
-                    Main.Log("made stats view");
+                    Main.LogDebug("made stats view");
                     var statsView = statsGameObject.AddComponent<CharInfoStatisticsPCView>();
-                    Main.Log("added component");
+                    Main.LogDebug("added component");
 
                     statsGameObject.GetComponent<CanvasGroup>().alpha = 1.0f;
 
                     GameObject.DestroyImmediate(statsGameObject.GetComponent<CharInfoAbilitiesPCView>());
-                    Main.Log("destroy old component");
+                    Main.LogDebug("destroy old component");
                     var toRemove = statsGameObject.GetComponentsInChildren<CharInfoFeatureGroupPCView>();
                     foreach (var r in toRemove)
                         GameObject.DestroyImmediate(r.gameObject);
-                    Main.Log("and subobjects");
+                    Main.LogDebug("and subobjects");
 
                     __instance.m_ComponentViews[CharInfoComponentType_EXT.Statistics] = statsView;
                 }
@@ -403,12 +413,33 @@ namespace BubbleTweaks {
         }
     }
 
-    [HarmonyPatch(typeof(CharInfoMenuSelectorPCView))]
-    static class CharInfoMenuSelectorPCView_Patches {
+    [HarmonyPatch(typeof(CharInfoMenuEntityVM))]
+    static class DebugPatches {
+        [HarmonyPatch(MethodType.Constructor)]
+        public static void _ctor(CharInfoMenuEntityVM __instance) {
+            Main.LogDebug("CharInfoMenuEntityVM, pageType: " + (int)__instance.PageType);
+        }
+    }
+
+    [HarmonyPatch(typeof(CharInfoMenuVM))]
+    static class DebugPatches2 {
+        [HarmonyPatch(nameof(CharInfoMenuVM.CreateEntities)), HarmonyPostfix]
+        public static void CreateEntities(CharInfoMenuVM __instance) {
+            Main.LogDebug("CreateEntities...");
+            foreach (var vm in __instance.m_EntitiesList) {
+                Main.LogDebug("vm: " + vm.PageType);
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(CharInfoMenuSelectorView))]
+    static class CharInfoMenuSelectorView_Patches {
         [HarmonyPatch("Initialize"), HarmonyPrefix]
-        static void Initialize(CharInfoMenuSelectorPCView __instance) {
+        static void Initialize(CharInfoMenuSelectorView __instance) {
+            Main.LogDebug("Modifying CharInfoMenuSelectorView.Initialize");
             if (__instance.m_MenuEntities.Empty()) {
-                var prefab = __instance.GetComponentInChildren<CharInfoMenuEntityPCView>().gameObject;
+                Main.LogDebug("Adding our new prefab");
+                var prefab = __instance.GetComponentInChildren<CharInfoMenuEntityView>().gameObject;
                 GameObject.Instantiate(prefab, __instance.gameObject.transform);
             }
         }
@@ -844,24 +875,31 @@ namespace BubbleTweaks {
 
     class StatisticsOhMy {
         internal static void Install() {
+            Main.LogDebug("Instaling bubbletweaks statistics module");
             if (!CharInfoWindowUtility.PagesOrderPC[UnitType.MainCharacter].Contains(CharInfoPageType_EXT.Statistics)) {
-                Main.Log("Injecting enums");
+                Main.LogDebug("Attempting enum injection");
 
-                CharInfoWindowUtility.PagesOrderPC[UnitType.MainCharacter].Add(CharInfoPageType_EXT.Statistics);
-                CharInfoWindowUtility.PagesOrderPC[UnitType.Companion].Add(CharInfoPageType_EXT.Statistics);
-                CharInfoWindowUtility.PagesOrderPC[UnitType.Pet].Add(CharInfoPageType_EXT.Statistics);
+                try {
 
+                    CharInfoWindowUtility.PagesOrderPC[UnitType.MainCharacter].Add(CharInfoPageType_EXT.Statistics);
+                    CharInfoWindowUtility.PagesOrderPC[UnitType.Companion].Add(CharInfoPageType_EXT.Statistics);
+                    CharInfoWindowUtility.PagesOrderPC[UnitType.Pet].Add(CharInfoPageType_EXT.Statistics);
+                    CharInfoWindowUtility.PagesOrderPC[UnitType.Unknown].Add(CharInfoPageType_EXT.Statistics);
 
-                CharInfoWindowUtility.PagesContent[CharInfoPageType_EXT.Statistics] = new CharInfoPage {
-                    ComponentsForAll = new List<CharInfoComponentType>
-                        {
+                    CharInfoWindowUtility.PagesContent[CharInfoPageType_EXT.Statistics] = new CharInfoPage {
+                        ComponentsForAll = new List<CharInfoComponentType>
+                            {
                         CharInfoComponentType.NameAndPortrait,
                         CharInfoComponentType.LevelClassScores,
                         CharInfoComponentType.AttackMain,
                         CharInfoComponentType.DefenceMain,
                         CharInfoComponentType_EXT.Statistics,
                     }
-                };
+                    };
+
+                } catch (Exception e) {
+                    Main.Error(e);
+                }
             } else {
                 Game.ResetUI();
             }

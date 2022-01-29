@@ -81,7 +81,6 @@ namespace BubbleTweaks {
             dropdown.m_Description = Helpers.CreateString($"{key}.description", name);
             dropdown.m_TooltipDescription = Helpers.CreateString($"{key}.tooltip-description", tooltip);
             dropdown.m_CashedLocalizedValues = new();
-            Main.Log("created cashed values?");
             foreach (var v in Enum.GetValues(typeof(T)))
                 dropdown.m_CashedLocalizedValues.Add(v.ToString());
             dropdown.m_ShowVisualConnection = true;
@@ -212,6 +211,16 @@ namespace BubbleTweaks {
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "harmony method")]
         static bool Load(UnityModManager.ModEntry modEntry) {
+            try {
+                return DoLoad(modEntry);
+            } catch (Exception e) {
+                Main.Error(e, "bad");
+            }
+
+            return false;
+        }
+
+        private static bool DoLoad(UnityModManager.ModEntry modEntry) {
             harmony = new Harmony(modEntry.Info.Id);
 #if DEBUG
             modEntry.OnUnload = OnUnload;
@@ -228,36 +237,32 @@ namespace BubbleTweaks {
             //BundleManger.AddBundle("tutorialcanvas");
             Main.Log("Loaded bundle");
 
-#if DEBUG
             harmony.PatchAll();
-            PostPatchInitializer.Initialize();
-            //SpeedTweaks.Install();
-            //Crusade.Install();
-            //StatisticsOhMy.Install();
-            MinorVisualTweaks.Install();
-            LuckMeter.Install();
-#else
-            harmony.PatchAll();
-            PostPatchInitializer.Initialize();
             SpeedTweaks.Install();
             Crusade.Install();
             StatisticsOhMy.Install();
             MinorVisualTweaks.Install();
-            LuckMeter.Install();
-#endif
+
+            //StatusConditions.Install();
+            //LuckMeter.Install();
 
 
             return true;
         }
+
         static bool Shifting => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
         static void OnUpdate(UnityModManager.ModEntry modEntry, float delta) {
 
 #if DEBUG
-            if (Input.GetKeyDown(KeyCode.I) && Shifting) {
+            if (Input.GetKeyDown(KeyCode.LeftAlt)) {
+                ActionWheel.Toggle();
+            } else if (Input.GetKeyUp(KeyCode.LeftAlt)) {
+                //ActionWheel.Hide();
             } else if (Input.GetKeyDown(KeyCode.F) && Shifting) {
                 modEntry.GetType().GetMethod("Reload", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(modEntry, new object[] { });
             } else if (Input.GetKeyDown(KeyCode.R) && Shifting) {
+                BubblePrintsThinger.DoThing();
                 //Main.Log("HELLO");
                 //LuckMeter.Show();
             }
@@ -274,17 +279,15 @@ namespace BubbleTweaks {
             //Crusade.Uninstall();
             //StatisticsOhMy.Uninstall();
             LuckMeter.Uninstall();
+            //StatusConditions.Uninstall();
             //MinorVisualTweaks.Uninstall();
             Resources.Uninstall();
+            ActionWheel.Uninstall();
 
             return true;
 
         }
 #endif
-
-        internal static void LogPatch(string v, object coupDeGraceAbility) {
-            throw new NotImplementedException();
-        }
 
         public static void Log(string msg) {
             ModSettings.ModEntry.Logger.Log(msg);
@@ -299,15 +302,19 @@ namespace BubbleTweaks {
         public static void LogHeader(string msg) {
             Log($"--{msg.ToUpper()}--");
         }
-        public static void Error(Exception e, string message) {
-            Log(message);
+        public static void Error(Exception e, string message = null) {
+            if (message != null)
+                Log(message);
+
             Log(e.ToString());
-            PFLog.Mods.Error(message);
+            if (message != null)
+                PFLog.Mods.Error(message);
         }
         public static void Error(string message) {
             Log(message);
             PFLog.Mods.Error(message);
         }
+
 
         public static void Safely(Action act) {
             try {

@@ -3,11 +3,11 @@
     "Author": "bubbles",
     "DisplayName": "Bubble Tweaks",
     "EntryMethod": "BubbleTweaks.Main.Load",
-    "GameVersion": "1.1.0",
+    "GameVersion": "1.2.0",
     "HomePage": "https://github.com/factubsio/BubbleTweaks/releases",
     "Id": "BubbleTweaks",
     "ManagerVersion": "0.23.0",
     "Repository": "https://raw.githubusercontent.com/factubsio/BubbleTweaks/master/Repository.json",
     "Requirements": [],
-    "Version": "0.10.0"
+    "Version": "1.11.0"
 }
