@@ -151,7 +151,44 @@ namespace BubbleTweaks {
         }
     }
 
+    [HarmonyPatch(typeof(PauseToggle))]
+    static class PauseToggle_Patches {
+        public static float GetPauseStrength() => BubbleSettings.Instance.PauseFadeStrength.GetValue();
 
+        [HarmonyPatch(nameof(PauseToggle.PlayPause)), HarmonyTranspiler]
+        static IEnumerable<CodeInstruction> PlayPause(IEnumerable<CodeInstruction> instructions) {
+            return PatchPauseFunction(instructions);
+        }
+
+        [HarmonyPatch(nameof(PauseToggle.Initialize)), HarmonyTranspiler]
+        static IEnumerable<CodeInstruction> Initialize(IEnumerable<CodeInstruction> instructions) {
+            return PatchPauseFunction(instructions);
+        }
+
+        [HarmonyPatch(nameof(PauseToggle.OnAreaDidLoad)), HarmonyTranspiler]
+        static IEnumerable<CodeInstruction> OnAreaDidLoad(IEnumerable<CodeInstruction> instructions) {
+            return PatchPauseFunction(instructions);
+        }
+
+        private static IEnumerable<CodeInstruction> PatchPauseFunction(IEnumerable<CodeInstruction> instructions) {
+            var input = instructions.ToList();
+            int load_const = input.FindIndex(ins => ins.LoadsConstant(1.0));
+            if (load_const == -1) {
+                Main.Log("ERROR: cannot find ldc 1");
+                return instructions;
+            } else {
+                Main.Log("Found ldc 1 @ " + load_const);
+            }
+
+            var old = input[load_const];
+            var replacement = CodeInstruction.Call(typeof(PauseToggle_Patches), nameof(PauseToggle_Patches.GetPauseStrength));
+            replacement.MoveLabelsFrom(old);
+
+            input[load_const] = replacement;
+
+            return input;
+        }
+    }
 
 
     class MinorVisualTweaks {

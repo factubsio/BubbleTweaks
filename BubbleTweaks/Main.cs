@@ -42,6 +42,7 @@ namespace BubbleTweaks {
     public class UISettingsEntityDropdownAttackTextColor : UISettingsEntityDropdownEnum<AttackTextColor> { }
 
     public class BubbleSettings {
+        public SettingsEntityFloat PauseFadeStrength = new("bubbles.settings.game.pause.fade-strength", 1.0f);
         public SettingsEntityFloat TacticalCombatSpeed = new("bubbles.settings.game.tactical.time-scale", 1.0f);
         public SettingsEntityFloat InCombatSpeed = new("bubbles.settings.game.in-combat.time-scale", 1.0f);
         public SettingsEntityFloat OutOfCombatSpeed = new("bubbles.settings.game.out-of-combat.time-scale", 1.0f);
@@ -53,6 +54,7 @@ namespace BubbleTweaks {
 
         public SettingsEntityBool PartyViewWith8Slots = new("bubbles.settings.game.ui-party-view-eight", false, false, true);
 
+        public UISettingsEntitySliderFloat PauseFadeStrengthSlider;
         public UISettingsEntitySliderFloat TacticalCombatSpeedSlider;
         public UISettingsEntitySliderFloat InCombatSpeedSlider;
         public UISettingsEntitySliderFloat OutOfCombatSpeedSlider;
@@ -117,6 +119,9 @@ namespace BubbleTweaks {
         public void Initialize() {
             if (Initialized) return;
             Initialized = true;
+
+            PauseFadeStrengthSlider = MakeSliderFloat("settings.game.pause.fade-strength", "Fade strength during pause", "Reduces the strength of the fade effect when the game is paused", 0, 1, 0.1f);
+            PauseFadeStrengthSlider.LinkSetting(PauseFadeStrength);
 
             TacticalCombatSpeedSlider = MakeSliderFloat("settings.game.tactical.time-scale", "Increase tactical combat animation speed", "Speeds up the animation speed of the all characters in tactical battle mode.", 1, 10, 0.1f);
             TacticalCombatSpeedSlider.LinkSetting(TacticalCombatSpeed);
@@ -193,6 +198,7 @@ namespace BubbleTweaks {
 
             Game.Instance.UISettingsManager.m_GameSettingsList.Add(
                 BubbleSettings.MakeSettingsGroup("bubble.ui-tweaks", "Bubble UI tweaks",
+                    BubbleSettings.Instance.PauseFadeStrengthSlider,
                     BubbleSettings.Instance.PartyViewWith8SlotsToggle));
 
             if (BubbleSettings.Instance.PartyViewWith8Slots.GetValue()) {
