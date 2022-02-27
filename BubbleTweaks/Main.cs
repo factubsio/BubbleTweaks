@@ -249,8 +249,11 @@ namespace BubbleTweaks {
             StatisticsOhMy.Install();
             MinorVisualTweaks.Install();
 
+            EventBus.Subscribe(AoeAreaIndicators.Instance);
             //StatusConditions.Install();
             //LuckMeter.Install();
+
+
 
 
             return true;
@@ -289,6 +292,7 @@ namespace BubbleTweaks {
             //MinorVisualTweaks.Uninstall();
             Resources.Uninstall();
             ActionWheel.Uninstall();
+            EventBus.Unsubscribe(AoeAreaIndicators.Instance);
 
             return true;
 

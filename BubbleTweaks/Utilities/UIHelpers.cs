@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kingmaker.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -28,6 +29,18 @@ namespace BubbleTweaks.Utilities {
             obj.localPosition = Vector3.zero;
             obj.localScale = Vector3.one;
             obj.localRotation = Quaternion.identity;
+        }
+
+        
+        public static GameObject[] ChildObjects(this GameObject obj, params string[] paths) {
+            return paths.Select(p => obj.transform.Find(p)?.gameObject).ToArray();
+        }
+
+        public static void DestroyChildren(this GameObject obj, params string[] paths) {
+            obj.ChildObjects(paths).ForEach(GameObject.Destroy);
+        }
+        public static void DestroyChildrenImmediate(this GameObject obj, params string[] paths) {
+            obj.ChildObjects(paths).ForEach(GameObject.DestroyImmediate);
         }
 
         public static void AddTo(this Transform obj, GameObject parent) { obj.AddTo(parent.transform); }

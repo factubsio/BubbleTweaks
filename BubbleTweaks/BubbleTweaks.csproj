@@ -172,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ActionWheel.cs" />
+    <Compile Include="AoeIndicators.cs" />
     <Compile Include="BubblePrintsThinger.cs" />
     <Compile Include="BundleManager.cs" />
     <Compile Include="Config\Blueprints.cs" />
@@ -208,6 +209,9 @@
     <EmbeddedResource Include="Config\Blueprints.json" />
     <None Include="..\.editorconfig">
       <Link>.editorconfig</Link>
+    </None>
+    <None Include="aoe_indicators.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Info.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
