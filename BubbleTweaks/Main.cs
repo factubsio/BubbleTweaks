@@ -29,6 +29,7 @@ using Kingmaker.UI.MVVM._VM.Party;
 using Kingmaker.UI.Overtip;
 using Kingmaker.UI._ConsoleUI.Overtips;
 using System.Reflection.Emit;
+using Kingmaker.UnitLogic.ActivatableAbilities;
 
 namespace BubbleTweaks {
 
@@ -254,8 +255,6 @@ namespace BubbleTweaks {
             //LuckMeter.Install();
 
 
-
-
             return true;
         }
 
@@ -271,8 +270,7 @@ namespace BubbleTweaks {
             } else if (Input.GetKeyDown(KeyCode.F) && Shifting) {
                 modEntry.GetType().GetMethod("Reload", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(modEntry, new object[] { });
             } else if (Input.GetKeyDown(KeyCode.R) && Shifting) {
-                BubblePrintsThinger.DoThing();
-                //Main.Log("HELLO");
+                PartyVM_Patches.Repatch();
                 //LuckMeter.Show();
             }
 #endif
@@ -284,9 +282,9 @@ namespace BubbleTweaks {
             Main.Log("WARNING: UNLOADING");
 
             harmony.UnpatchAll();
-            //SpeedTweaks.Uninstall();
-            //Crusade.Uninstall();
-            //StatisticsOhMy.Uninstall();
+            SpeedTweaks.Uninstall();
+            Crusade.Uninstall();
+            StatisticsOhMy.Uninstall();
             LuckMeter.Uninstall();
             //StatusConditions.Uninstall();
             //MinorVisualTweaks.Uninstall();

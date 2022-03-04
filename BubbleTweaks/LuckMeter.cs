@@ -205,192 +205,195 @@ namespace BubbleTweaks {
     [HarmonyPatch(typeof(PartyPCView))]
     static class PartyPCView_Patches {
         private static Sprite hudBackground8;
+        private static int leadingEdge;
+        private static float itemWidth;
+        private static float firstX;
+        private static float scale;
 
         [HarmonyPatch("Initialize"), HarmonyPrefix]
         static void Initialize(PartyPCView __instance) {
             if (PartyVM_Patches.SupportedSlots == 6)
                 return;
 
-            Main.Log("INSTALLING BUBBLE GROUP PANEL");
+            try {
 
-            if (hudBackground8 == null) {
-                hudBackground8 = AssetLoader.LoadInternal("sprites", "UI_HudBackgroundCharacter_8.png", new Vector2Int(1746, 298));
+
+                Main.Log("INSTALLING BUBBLE GROUP PANEL");
+
+                if (hudBackground8 == null) {
+                    hudBackground8 = AssetLoader.LoadInternal("sprites", "UI_HudBackgroundCharacter_8.png", new Vector2Int(1746, 298));
+                }
+
+                __instance.transform.Find("Background").GetComponent<Image>().sprite = hudBackground8;
+
+                scale = 6 / (float)8;
+                itemWidth = 94.5f;
+                __instance.m_Shift = itemWidth;
+
+                var currentViews = __instance.GetComponentsInChildren<PartyCharacterPCView>(true);
+                List<GameObject> toTweak = new(currentViews.Select(view => view.gameObject));
+                firstX = toTweak[0].transform.localPosition.x - 9.5f;
+
+                UpdateCharacterBindings(__instance);
+
+            } catch (Exception e) {
+                Main.Error(e, "party view initialize");
             }
+        }
 
-            __instance.transform.Find("Background").GetComponent<Image>().sprite = hudBackground8;
+        [HarmonyPatch(nameof(PartyPCView.UpdateCharacterBindings)), HarmonyPostfix]
+        static void UpdateCharacterBindings(PartyPCView __instance) {
+            if (PartyVM_Patches.SupportedSlots == 6) return;
 
             var currentViews = __instance.GetComponentsInChildren<PartyCharacterPCView>(true);
             List<GameObject> toTweak = new(currentViews.Select(view => view.gameObject));
-            for (int i = currentViews.Length; i < 8; i++) {
-                var newView = GameObject.Instantiate(currentViews[0].gameObject, __instance.transform);
-
-                var animations = newView.transform.Find("Levelups/LevelUp").GetComponentsInChildren<DOTweenAnimation>();
-                foreach (var anim in animations) {
-                    if (anim.animationType == DG.Tweening.Core.DOTweenAnimationType.Fade && anim.targetType == DG.Tweening.Core.TargetType.Image) {
-                        var image = anim.target as Image;
-                        float alpha = 1;
-                        if (image.GetComponent<OwlcatButton>() != null)
-                            alpha = 0.4118f;
-                        image.color = new Color(image.color.r, image.color.g, image.color.b, alpha);
-                        GameObject.Destroy(anim);
-                    }
-                }
-
-
-                toTweak.Add(newView);
-                __instance.m_Characters.Add(newView.GetComponent<PartyCharacterPCView>());
-            }
-
-            float currentSep = toTweak[1].transform.localPosition.x - toTweak[0].transform.localPosition.x;
-
-            float scale = 6 / (float)8;
-
-            //float leadingEdge = -(__instance.transform as RectTransform).sizeDelta.x * .5f;
-            float leadingEdge = -332;
-            float itemWidth = 94.5f;
+            firstX = toTweak[0].transform.localPosition.x - 9.5f;
 
             for (int i = 0; i < toTweak.Count; i++) {
                 GameObject view = toTweak[i];
 
-                var viewRect = view.transform as RectTransform;
-
-                var pos = viewRect.localPosition;
-                pos.x = leadingEdge + i * itemWidth;
-                viewRect.localPosition = pos;
-                viewRect.localScale = new Vector3(scale, scale, 1);
-
-                var portraitRect = view.transform.Find("Portrait") as RectTransform;
-                const float recaleFactor = 1.25f;
-                portraitRect.localScale = new Vector3(recaleFactor, recaleFactor, 1);
-
-                var frameRect = view.transform.Find("Frame") as RectTransform;
-                frameRect.pivot = new Vector2(.5f, 1);
-                frameRect.anchoredPosition = new Vector2(0, 23);
-                frameRect.sizeDelta = new Vector2(0, 47);
-
-                var healthBarRect = view.transform.Find("Health") as RectTransform;
-                healthBarRect.pivot = new Vector2(0, 1);
-                healthBarRect.anchoredPosition = new Vector2(0, -2);
-                healthBarRect.anchorMin = new Vector2(0, 1);
-                healthBarRect.anchorMax = new Vector2(0, 1);
-                healthBarRect.localScale = new Vector2(recaleFactor, recaleFactor);
-
-                var hitpointRect = view.transform.Find("HitPoint") as RectTransform;
-                var hpPos = hitpointRect.anchoredPosition;
-                hpPos.y -= 20;
-                hitpointRect.anchoredPosition = hpPos;
-
-                view.transform.Find("PartBuffView").gameObject.SetActive(false);
-
-                (view.transform.Find("Frame/Selected/Mark") as RectTransform).anchoredPosition = new Vector2(0, 94);
-
-                var buffRect = view.transform.Find("BuffMain") as RectTransform;
-
-                buffRect.sizeDelta = new Vector2(-8, 24);
-                buffRect.pivot = new Vector2(0, 0);
-                buffRect.anchorMin = new Vector2(0, 1);
-                buffRect.anchorMax = new Vector2(1, 1);
-                buffRect.anchoredPosition = new Vector2(4, -4);
-                buffRect.Edit<GridLayoutGroupWorkaround>(g => {
-                    g.constraint = GridLayoutGroup.Constraint.FixedRowCount;
-                    g.padding.top = 2;
-                });
-                buffRect.gameObject.AddComponent<Image>().color = new Color(.05f, .05f, .05f);
-
-                var buffHover = buffRect.Find("BuffTriggerNotification").GetComponent<OwlcatSelectable>();
-
-                __instance.AddDisposable(buffHover.OnHoverAsObservable().Subscribe<bool>(selected => {
-                    viewRect.SetAsLastSibling();
-                }));
-
-                buffRect.Find("BuffTriggerNotification/BuffAdditional/").localScale = new Vector2(1.25f, 1.25f);
-
-                if (i > 0)
-                    view.SetActive(false);
+                TweakPCView(__instance, i, view);
             }
+        }
+
+        private static void TweakPCView(PartyPCView __instance, int i, GameObject view) {
+            var viewRect = view.transform as RectTransform;
+
+            if (viewRect.localScale.x <= (scale + 0.01f)) return;
+
+            var pos = viewRect.localPosition;
+            pos.x = firstX + (i * itemWidth);
+            viewRect.localPosition = pos;
+            viewRect.localScale = new Vector3(scale, scale, 1);
+
+            var portraitRect = view.transform.Find("Portrait") as RectTransform;
+            const float recaleFactor = 1.25f;
+            portraitRect.localScale = new Vector3(recaleFactor, recaleFactor, 1);
+
+            var frameRect = view.transform.Find("Frame") as RectTransform;
+            frameRect.pivot = new Vector2(.5f, 1);
+            frameRect.anchoredPosition = new Vector2(0, 23);
+            frameRect.sizeDelta = new Vector2(0, 47);
+
+            var healthBarRect = view.transform.Find("Health") as RectTransform;
+            healthBarRect.pivot = new Vector2(0, 1);
+            healthBarRect.anchoredPosition = new Vector2(0, -2);
+            healthBarRect.anchorMin = new Vector2(0, 1);
+            healthBarRect.anchorMax = new Vector2(0, 1);
+            healthBarRect.localScale = new Vector2(recaleFactor, recaleFactor);
+
+            var hitpointRect = view.transform.Find("HitPoint") as RectTransform;
+            var hpPos = hitpointRect.anchoredPosition;
+            hpPos.y -= 20;
+            hitpointRect.anchoredPosition = hpPos;
+
+            view.transform.Find("PartBuffView").gameObject.SetActive(false);
+
+            (view.transform.Find("Frame/Selected/Mark") as RectTransform).anchoredPosition = new Vector2(0, 94);
+
+            var buffRect = view.transform.Find("BuffMain") as RectTransform;
+
+            buffRect.sizeDelta = new Vector2(-8, 24);
+            buffRect.pivot = new Vector2(0, 0);
+            buffRect.anchorMin = new Vector2(0, 1);
+            buffRect.anchorMax = new Vector2(1, 1);
+            buffRect.anchoredPosition = new Vector2(4, -4);
+            buffRect.Edit<GridLayoutGroupWorkaround>(g => {
+                g.constraint = GridLayoutGroup.Constraint.FixedRowCount;
+                g.padding.top = 2;
+            });
+            buffRect.gameObject.AddComponent<Image>().color = new Color(.05f, .05f, .05f);
+
+            var buffHover = buffRect.Find("BuffTriggerNotification").GetComponent<OwlcatSelectable>();
+
+            __instance.AddDisposable(buffHover.OnHoverAsObservable().Subscribe<bool>(selected => {
+                viewRect.SetAsLastSibling();
+            }));
+
+            buffRect.Find("BuffTriggerNotification/BuffAdditional/").localScale = new Vector2(1.25f, 1.25f);
         }
     }
 
-    [HarmonyPatch(typeof(UnitBuffPartPCView))]
-    static class UnitBuffPartPCView_Patches {
+    //[HarmonyPatch(typeof(UnitBuffPartPCView))]
+    //static class UnitBuffPartPCView_Patches {
 
-        private static HashSet<Guid> Dreamwork = new() {
-            // Teamwork buffs
-            Guid.Parse("44569e9e95364bf42b1071382a8a89da"),
-            Guid.Parse("a6298b0f87fc7694086cd8eac9d6a2aa"),
-            Guid.Parse("cc26546e4f73fe142b606b4759b4eb18"),
-            Guid.Parse("e5079510480031146992dafde835c3b8"),
-            Guid.Parse("3de0359d9480cb549ab6cf1eac51f9dc"),
-            Guid.Parse("2f5768f642de59f40acd5211a627a237"),
-            Guid.Parse("965ea9716b87f4b46a6a8f50523393bd"),
-            Guid.Parse("693964e674883e74b8d0005dbf4a4e6b"),
-            Guid.Parse("731a11dcc952e744f8a88768e07a0542"),
-            Guid.Parse("953c3dbda63dcdb4aad6c54c1a4590d0"),
-            Guid.Parse("9c179de4894c295499822714878f3590"),
-            Guid.Parse("c7223802e54e8524c8b1e5c71df22f7b"),
+    //    private static HashSet<Guid> Dreamwork = new() {
+    //        // Teamwork buffs
+    //        Guid.Parse("44569e9e95364bf42b1071382a8a89da"),
+    //        Guid.Parse("a6298b0f87fc7694086cd8eac9d6a2aa"),
+    //        Guid.Parse("cc26546e4f73fe142b606b4759b4eb18"),
+    //        Guid.Parse("e5079510480031146992dafde835c3b8"),
+    //        Guid.Parse("3de0359d9480cb549ab6cf1eac51f9dc"),
+    //        Guid.Parse("2f5768f642de59f40acd5211a627a237"),
+    //        Guid.Parse("965ea9716b87f4b46a6a8f50523393bd"),
+    //        Guid.Parse("693964e674883e74b8d0005dbf4a4e6b"),
+    //        Guid.Parse("731a11dcc952e744f8a88768e07a0542"),
+    //        Guid.Parse("953c3dbda63dcdb4aad6c54c1a4590d0"),
+    //        Guid.Parse("9c179de4894c295499822714878f3590"),
+    //        Guid.Parse("c7223802e54e8524c8b1e5c71df22f7b"),
 
-            // Toggles (power attack, rapid shot)
-            Guid.Parse("0f310c1e709e15e4fa693db15a4baeb4"),
-            Guid.Parse("f958ef62eea5050418fb92dfa944c631"),
-            Guid.Parse("8af258b1dd322874ba6047b0c24660c7"),
-            Guid.Parse("bf3b19ed9c919464aa2a741271718542"),
+    //        // Toggles (power attack, rapid shot)
+    //        Guid.Parse("0f310c1e709e15e4fa693db15a4baeb4"),
+    //        Guid.Parse("f958ef62eea5050418fb92dfa944c631"),
+    //        Guid.Parse("8af258b1dd322874ba6047b0c24660c7"),
+    //        Guid.Parse("bf3b19ed9c919464aa2a741271718542"),
 
-        };
-
-
-        [HarmonyPatch("DrawBuffs"), HarmonyPostfix]
-        static void DrawBuffs(UnitBuffPartPCView __instance) {
-            try {
-                if (PartyVM_Patches.SupportedSlots == 6)
-                    return;
-
-                if (__instance.ViewModel.Buffs.Count <= 6)
-                    return;
-
-                var main = __instance.m_MainContainer.transform;
-                var overflow = __instance.m_AdditionalContainer.transform;
-
-                int[] badButShown = new int[5];
-                int[] goodButHidden = new int[5];
-                int nextShown = 0;
-                int nextHidden = 0;
-
-                for (int i = 0; i < __instance.m_BuffList.Count; i++) {
-                    var buff = __instance.m_BuffList[i].ViewModel.Buff;
-                    if (nextShown < 5 && Dreamwork.Contains(buff.Blueprint.AssetGuid.m_Guid)) {
-                        badButShown[nextShown++] = i;
-                    } else if (nextHidden < 5 && __instance.m_BuffList[i].transform.parent == overflow) {
-                        goodButHidden[nextHidden++] = i;
-                    }
-                }
-
-                if (nextHidden == 0 || nextShown == 0)
-                    return;
-
-                Vector3 overflowScale = __instance.m_BuffList[goodButHidden[0]].transform.localScale;
-                Vector3 mainScale = __instance.m_BuffList[badButShown[0]].transform.localScale;
+    //    };
 
 
-                while (nextHidden > 0 && nextShown > 0) {
-                    nextHidden--;
-                    nextShown--;
+    //    [HarmonyPatch("DrawBuffs"), HarmonyPostfix]
+    //    static void DrawBuffs(UnitBuffPartPCView __instance) {
+    //        try {
+    //            if (PartyVM_Patches.SupportedSlots == 6)
+    //                return;
 
-                    __instance.m_BuffList[badButShown[nextShown]].transform.SetParent(overflow);
-                    __instance.m_BuffList[badButShown[nextShown]].transform.localScale = overflowScale;
-                    __instance.m_BuffList[goodButHidden[nextHidden]].transform.SetParent(main);
-                    __instance.m_BuffList[goodButHidden[nextHidden]].transform.localScale = mainScale;
-                }
+    //            if (__instance.ViewModel.Buffs.Count <= 6)
+    //                return;
 
-                while (main.childCount > 6) {
-                    var toSwap = main.transform.GetChild(6);
-                    toSwap.transform.SetParent(overflow);
-                    toSwap.localScale = overflowScale;
-                }
-            } catch (Exception ex) {
-                Main.Error(ex, "buffling");
-            }
-        }
-    }
+    //            var main = __instance.m_MainContainer.transform;
+    //            var overflow = __instance.m_AdditionalContainer.transform;
+
+    //            int[] badButShown = new int[5];
+    //            int[] goodButHidden = new int[5];
+    //            int nextShown = 0;
+    //            int nextHidden = 0;
+
+    //            for (int i = 0; i < __instance.m_BuffList.Count; i++) {
+    //                var buff = __instance.m_BuffList[i].ViewModel.Buff;
+    //                if (nextShown < 5 && Dreamwork.Contains(buff.Blueprint.AssetGuid.m_Guid)) {
+    //                    badButShown[nextShown++] = i;
+    //                } else if (nextHidden < 5 && __instance.m_BuffList[i].transform.parent == overflow) {
+    //                    goodButHidden[nextHidden++] = i;
+    //                }
+    //            }
+
+    //            if (nextHidden == 0 || nextShown == 0)
+    //                return;
+
+    //            Vector3 overflowScale = __instance.m_BuffList[goodButHidden[0]].transform.localScale;
+    //            Vector3 mainScale = __instance.m_BuffList[badButShown[0]].transform.localScale;
+
+
+    //            while (nextHidden > 0 && nextShown > 0) {
+    //                nextHidden--;
+    //                nextShown--;
+
+    //                __instance.m_BuffList[badButShown[nextShown]].transform.SetParent(overflow);
+    //                __instance.m_BuffList[badButShown[nextShown]].transform.localScale = overflowScale;
+    //                __instance.m_BuffList[goodButHidden[nextHidden]].transform.SetParent(main);
+    //                __instance.m_BuffList[goodButHidden[nextHidden]].transform.localScale = mainScale;
+    //            }
+
+    //            while (main.childCount > 6) {
+    //                var toSwap = main.transform.GetChild(6);
+    //                toSwap.transform.SetParent(overflow);
+    //                toSwap.localScale = overflowScale;
+    //            }
+    //        } catch (Exception ex) {
+    //            Main.Error(ex, "buffling");
+    //        }
+    //    }
+    //}
 
     //[HarmonyPatch(typeof(PartyVM))]
     public static class PartyVM_Patches {
@@ -401,7 +404,7 @@ namespace BubbleTweaks {
 
         //[HarmonyTranspiler]
         //[HarmonyPatch("set_StartIndex")]
-        static IEnumerable<CodeInstruction> set_StartIndex(IEnumerable<CodeInstruction> instructions) {
+        static IEnumerable<CodeInstruction> UpdateStartValue(IEnumerable<CodeInstruction> instructions) {
             return ConvertConstants(instructions, 8);
         }
 
@@ -440,7 +443,7 @@ namespace BubbleTweaks {
 
 
         private static readonly BubblePatch Patch_ctor = BubblePatch.FirstConstructor(typeof(PartyVM), typeof(PartyVM_Patches));
-        private static readonly BubblePatch Patch_set_StartIndex = BubblePatch.Setter(typeof(PartyVM), typeof(PartyVM_Patches), "StartIndex");
+        private static readonly BubblePatch Patch_set_StartIndex = BubblePatch.Method(typeof(PartyVM), typeof(PartyVM_Patches), "UpdateStartValue");
 
         public static void Repatch() {
             if (BubbleSettings.Instance.PartyViewWith8Slots.GetValue())
