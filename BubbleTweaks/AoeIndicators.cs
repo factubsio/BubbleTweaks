@@ -80,6 +80,7 @@ namespace BubbleTweaks {
             if (!entityData.IsInGame) return;
             if (TacticalCombatHelper.IsActive) return;
             if (doNotIndicate.Contains(entityData.Blueprint.AssetGuid.ToString())) return;
+            if (!abilityColors.ContainsKey(entityData.Blueprint.AssetGuid.ToString())) return;
             if (markers.ContainsKey(entityData)) return;
 
             if (entityData.Blueprint.Shape == AreaEffectShape.Cylinder) {
