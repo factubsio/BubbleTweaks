@@ -46,6 +46,37 @@ The mod should aim to fit into the base game without looking like a mod.
 		Each character will have a new tab 'statistics' in their character sheet
 		It can only track stats while it's installed so sadly it won't retroactively find them
 
+***CIRCLES***
+Edit the `aoe_indicators.json` file in the mod folder.
+
+Most spells should already have an entry, they look like:
+
+```
+    //GreaseArea
+    {
+      "ability": "d46313be45054b248a1f1656ddb38614",
+      "type": "bad"
+    }
+```
+
+For type you can enter:
+ * `good` - uses colors from `__default_good__` at the very bottom of the file
+ * `bad` - uses colors from `__default_bad__` at the very bottom of the file
+ * `skip` - no circle
+
+You can also supply either (or both) of the normal/hi colors directly as rgb:
+```
+    {
+      //EXAMPLE_DOES_NOT_EXIST: use "hi" and "normal" to set custom RGB for the highlighted/normal circles
+      "ability": "EXAMPLE",
+      "hi": [ 1, 1, 1 ],
+      "normal": [ 0.4, 0.3, 0.2 ]
+    },
+```
+
+`normal` - normal color of circle
+`hi` - color of circle when you path over it in TBM
+
 Acknowledgments:  
 
 -   Pathfinder Wrath of The Righteous Discord channel members
