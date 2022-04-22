@@ -135,9 +135,7 @@ namespace BubbleTweaks {
 
 
             var titlePrefab = GameObject.Instantiate(LabelPrefab).GetComponent<TextMeshProUGUI>();
-            Main.Log("ERROR: Null heading prefab");
             titlePrefab.alignment = TextAlignmentOptions.Left;
-            Main.Log("ERROR: Null heading prefab");
             titlePrefab.fontStyle = FontStyles.Bold;
             //titlePrefab.gameObject.AddComponent<LayoutElement>().minWidth = 200;
 

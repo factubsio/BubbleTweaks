@@ -30,6 +30,7 @@ using Kingmaker.UI.Overtip;
 using Kingmaker.UI._ConsoleUI.Overtips;
 using System.Reflection.Emit;
 using Kingmaker.UnitLogic.ActivatableAbilities;
+using System.Diagnostics;
 
 namespace BubbleTweaks {
 
@@ -208,6 +209,48 @@ namespace BubbleTweaks {
         }
     }
 
+    public static class Blueprinting {
+        public static void Test(BlueprintsCache __instance) {
+            var reader = new BinaryReader(__instance.m_PackFile);
+            byte[] typeGuid = new byte[16];
+            Dictionary<string, int> blueprintCountsByType = new();
+            GuidClassBinder binder = (GuidClassBinder)Json.Serializer.Binder;
+            int loaded = 0;
+            int total = 0;
+
+            Stopwatch timer = new();
+            timer.Start();
+            foreach (var (guid, cacheEntry) in __instance.m_LoadedBlueprints) {
+                //reader.BaseStream.Seek(cacheEntry.Offset, SeekOrigin.Begin);
+                //reader.Read(typeGuid, 0, typeGuid.Length);
+
+                //var typeGuidString = new Guid(typeGuid).ToString("N");
+
+                //if (binder.m_GuidToTypeCache.TryGetValue(typeGuidString, out var type)) {
+                //    if (blueprintCountsByType.TryGetValue(type.FullName, out var count))
+                //        blueprintCountsByType[type.FullName] = count;
+                //    else
+                //        blueprintCountsByType[type.FullName] = 1;
+
+                //    loaded++;
+                //} else {
+                //    Main.Error("could not find type for guid");
+                //}
+                //total++;
+                if (cacheEntry.Blueprint != null) {
+                    loaded++;
+                }
+                total++;
+            }
+            timer.Stop();
+            Main.Log($"Scanned types for {loaded}/{total} blueprints in {timer.ElapsedMilliseconds}ms, unique types: {blueprintCountsByType.Count}");
+            //foreach (var k in blueprintCountsByType.Keys) {
+            //    Main.Log(k);
+            //}
+        }
+
+    }
+
 #if DEBUG
     [EnableReloading]
 #endif
@@ -270,7 +313,8 @@ namespace BubbleTweaks {
             } else if (Input.GetKeyDown(KeyCode.F) && Shifting) {
                 modEntry.GetType().GetMethod("Reload", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(modEntry, new object[] { });
             } else if (Input.GetKeyDown(KeyCode.R) && Shifting) {
-                PartyVM_Patches.Repatch();
+                Blueprinting.Test(ResourcesLibrary.BlueprintsCache);
+                //PartyVM_Patches.Repatch();
                 //LuckMeter.Show();
             }
 #endif

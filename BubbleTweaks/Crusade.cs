@@ -144,7 +144,6 @@ namespace BubbleTweaks {
                     rootTransform.SetSiblingIndex(localMapPrefab.transform.GetSiblingIndex() + 1);
 
                     var mapManager = localMapPrefab.GetComponent<GlobalMapLocalMapManager>();
-                    Main.Log("got map manager");
 
                     var scroller = GameObject.Instantiate(scrollPrefab, rootTransform);
                     scrollContents = scroller.transform.Find("Viewport/Content");
@@ -179,9 +178,8 @@ namespace BubbleTweaks {
                     GameObject.Destroy(VillageListRoot.GetComponent<GlobalMapLocalMapManager>());
                     GameObject.Destroy(rootTransform.Find("Map").gameObject);
 
-                    var openButton = rootTransform.Find("SwitchButton/Background/ArrowUp").gameObject;
-                    var closeButton = rootTransform.Find("SwitchButton/Background/ArrowDown").gameObject;
-
+                    var openButton = rootTransform.Find("SwitchButton/Background/ArrowOpen").gameObject;
+                    var closeButton = rootTransform.Find("SwitchButton/Background/ArrowClose").gameObject;
 
                     var switchButton = rootTransform.Find("SwitchButton").GetComponent<OwlcatMultiButton>();
                     switchButton.OnLeftClick.RemoveAllListeners();
