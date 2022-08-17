@@ -134,8 +134,11 @@ namespace BubbleTweaks {
                 }
 
                 if (VillageListRoot == null) {
-                    var scrollPrefab = Game.Instance.UI.GlobalMapCanvas.transform.Find("ServiceWindowsConfig/EncyclopediaPCView/EncyclopediaNavigationView/BodyGroup/StandardScrollView").gameObject;
+                    Main.LogDebug($"Lookup up global map cavnas -> {Game.Instance.UI.GlobalMapCanvas != null}");
+                    var scrollPrefab = Game.Instance.UI.GlobalMapCanvas.transform.Find("ServiceWindowsConfig/Background/Windows/EncyclopediaPCView/EncyclopediaNavigationView/BodyGroup/StandardScrollView").gameObject;
+                    Main.LogDebug($"scrollPrefab good: {scrollPrefab != null}");
                     var localMapPrefab = Game.Instance.UI.GlobalMapCanvas.transform.Find("LocalMap").gameObject;
+                    Main.LogDebug($"localMapPrefab good: {localMapPrefab != null}");
 
                     VillageListRoot = GameObject.Instantiate(localMapPrefab, Game.Instance.UI.GlobalMapCanvas.transform);
                     var rootTransform = VillageListRoot.transform as RectTransform;
@@ -144,6 +147,8 @@ namespace BubbleTweaks {
                     rootTransform.SetSiblingIndex(localMapPrefab.transform.GetSiblingIndex() + 1);
 
                     var mapManager = localMapPrefab.GetComponent<GlobalMapLocalMapManager>();
+
+                    Main.LogDebug("creating scroller");
 
                     var scroller = GameObject.Instantiate(scrollPrefab, rootTransform);
                     scrollContents = scroller.transform.Find("Viewport/Content");
@@ -154,6 +159,7 @@ namespace BubbleTweaks {
                     scrollRect.anchorMax = new Vector2(0.95f, 1); //the scrollbar wants to go off the side of the panel for some reason
 
                     var buttonPrefab = GlobalMapUI.Instance.transform.Find("GlobalMapToolbarView/SkipDayButton").gameObject;
+                    Main.LogDebug($"buttonPrefab good: {buttonPrefab != null}");
 
                     entryPrefab = new GameObject("village_entry", typeof(RectTransform));
                     var button = GameObject.Instantiate(buttonPrefab, entryPrefab.transform);

@@ -287,13 +287,13 @@ namespace BubbleTweaks {
         private GameObject LabelPrefab {
             get {
                 Main.LogDebug($"service window: {ServiceWindow != null}");
-                return ServiceWindow.Find("CharacterInfoPCView/CharacterScreen/LevelClassScores/RaceGenderAlighment/Alignment/Alignment").gameObject;
+                return ServiceWindow.Find("Background/Windows/CharacterInfoPCView/CharacterScreen/LevelClassScores/RaceGenderAlighment/Alignment/Alignment").gameObject;
             }
         }
         private GameObject HeadingPrefab {
             get {
                 Main.LogDebug($"service window: {ServiceWindow != null}");
-                return ServiceWindow.Find("CharacterInfoPCView/CharacterScreen/NamePortrait/CharName/CharacterName").gameObject;
+                return ServiceWindow.Find("Background/Windows/CharacterInfoPCView/CharacterScreen/NamePortrait/CharName/CharacterName").gameObject;
             }
         }
 
