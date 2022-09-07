@@ -278,13 +278,17 @@ namespace BubbleTweaks {
             modEntry.OnUpdate = OnUpdate;
             ModSettings.ModEntry = modEntry;
 
-            ModSettings.ModEntry.Logger.Log("HELLO???");
+#if DEBUG
+            ModSettings.ModEntry.Logger.Log("HELLO (dev) ???");
+#else
+            ModSettings.ModEntry.Logger.Log("HELLO (REL) ???");
+#endif
 
             ModSettings.LoadAllSettings();
             Enabled = true;
             ModPath = modEntry.Path;
 
-            //BundleManger.AddBundle("tutorialcanvas");
+            BundleManger.AddBundle("tutorialcanvas");
             Main.Log("Loaded bundle");
 
             harmony.PatchAll();
@@ -294,8 +298,9 @@ namespace BubbleTweaks {
             MinorVisualTweaks.Install();
 
             EventBus.Subscribe(AoeAreaIndicators.Instance);
+            EventBus.Subscribe(DoorMarkerHandler.Instance);
             //StatusConditions.Install();
-            //LuckMeter.Install();
+            LuckMeter.Install();
 
 
             return true;
@@ -307,7 +312,8 @@ namespace BubbleTweaks {
 
 #if DEBUG
             if (Input.GetKeyDown(KeyCode.LeftAlt)) {
-                ActionWheel.Toggle();
+                MinorVisualTweaks.PrintDoors();
+                //ActionWheel.Toggle();
             } else if (Input.GetKeyUp(KeyCode.LeftAlt)) {
                 //ActionWheel.Hide();
             } else if (Input.GetKeyDown(KeyCode.F) && Shifting) {
@@ -325,16 +331,17 @@ namespace BubbleTweaks {
             Main.Log("WARNING: UNLOADING");
             Main.Log("WARNING: UNLOADING");
 
-            harmony.UnpatchAll();
-            SpeedTweaks.Uninstall();
-            Crusade.Uninstall();
-            StatisticsOhMy.Uninstall();
-            LuckMeter.Uninstall();
+            //SpeedTweaks.Uninstall();
+            //Crusade.Uninstall();
+            //StatisticsOhMy.Uninstall();
+            //LuckMeter.Uninstall();
             //StatusConditions.Uninstall();
             //MinorVisualTweaks.Uninstall();
-            Resources.Uninstall();
-            ActionWheel.Uninstall();
-            EventBus.Unsubscribe(AoeAreaIndicators.Instance);
+            //Resources.Uninstall();
+            //ActionWheel.Uninstall();
+            //EventBus.Unsubscribe(AoeAreaIndicators.Instance);
+            EventBus.Unsubscribe(DoorMarkerHandler.Instance);
+            harmony.UnpatchAll();
 
             return true;
 

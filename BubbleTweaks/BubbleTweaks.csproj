@@ -53,7 +53,7 @@
   </Target>
   <Target Name="Publicise" AfterTargets="CreateLib">
     <ItemGroup>
-      <PubliciseAssemblyCSharp Include="$(WrathPathDebug)\Wrath_Data\Managed\Assembly-CSharp.dll;$(WrathPathDebug)\Wrath_Data\Managed\Owlcat.Runtime.UI.dll" />
+      <PubliciseAssemblyCSharp Include="$(WrathPathDebug)\Wrath_Data\Managed\Assembly-CSharp.dll;$(WrathPathDebug)\Wrath_Data\Managed\DungeonArchitect.Core.dll;$(WrathPathDebug)\Wrath_Data\Managed\Owlcat.Runtime.UI.dll" />
       <PubliciseUniRx Include="$(WrathPathDebug)\Wrath_Data\Managed\UniRx.dll" />
     </ItemGroup>
     <Publicise InputAssemblies="@(PubliciseAssemblyCSharp)" OutputPath="$(SolutionDir)lib/" PubliciseCompilerGenerated="true" />
@@ -62,6 +62,10 @@
   <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityModManager\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DungeonArchitect.Core">
+      <HintPath>$(SolutionDir)lib\DungeonArchitect.Core_public.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
@@ -221,6 +225,9 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="Assets\icons\anchor_map_marker.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\icons\circle_border.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -234,6 +241,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\icons\disband_army_hover.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\icons\door_map_marker.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Assets\icons\Ico_status_charmed.png">

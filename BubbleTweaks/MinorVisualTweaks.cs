@@ -16,6 +16,16 @@ using static Kingmaker.Blueprints.Root.CursorRoot;
 using Kingmaker.UI.AbilityTarget;
 using Kingmaker.UI._ConsoleUI.Overtips;
 using System.Reflection;
+using Kingmaker;
+using DungeonArchitect;
+using Kingmaker.UI.MVVM._VM.ServiceWindows.LocalMap.Utils;
+using Kingmaker.View.MapObjects;
+using BubbleTweaks.Utilities;
+using Kingmaker.Localization;
+using Kingmaker.UI.MVVM._PCView.ServiceWindows.LocalMap;
+using Owlcat.Runtime.UI.Utility;
+using Kingmaker.PubSubSystem;
+using Kingmaker.Blueprints;
 
 namespace BubbleTweaks {
 
@@ -62,7 +72,7 @@ namespace BubbleTweaks {
             if (__instance == null)
                 return;
 
-            if (__instance.ViewModel.MarkerType == Kingmaker.UI.MVVM._VM.ServiceWindows.LocalMap.Utils.LocalMapMarkType.Loot) {
+            if (__instance.ViewModel.MarkerType == LocalMapMarkType.Loot) {
                 __instance.AddDisposable(__instance.ViewModel.IsVisible.Subscribe<bool>(value => {
                     var markerVm = __instance.ViewModel as LocalMapCommonMarkerVM;
                     if (markerVm == null) {
@@ -190,9 +200,129 @@ namespace BubbleTweaks {
         }
     }
 
+    public class DoorMarker : ILocalMapMarker {
+        private InteractionDoor door;
+        public DoorMarker(InteractionDoor door) {
+            this.door = door;
+        }
+        public string GetDescription() {
+            return "Door";
+        }
+
+        public LocalMapMarkType GetMarkerType() {
+            return LocalMapMarkType.Poi;
+        }
+
+        public Vector3 GetPosition() {
+            return door.transform.position;
+        }
+
+        public bool IsVisible() {
+            return true;
+        }
+    }
+
+    [HarmonyPatch(typeof(LocalMapBaseView))]
+    static class LocalMapBaseView_Patches {
+
+        private static Sprite doorSprite = null;
+        private static Sprite anchorSprite = null;
+
+
+        [HarmonyPatch(nameof(LocalMapBaseView.AddLocalMapMarker))]
+        [HarmonyPrefix]
+        public static bool AddLocalMapMarker(LocalMapMarkerVM localMapMarkerVM, LocalMapBaseView __instance) {
+            if (localMapMarkerVM.MarkerType >= LocalMapMarkType_EXT.Door) {
+                try {
+                    LocalMapMarkerSet localMapMarkerSet = __instance.m_MarkerSets.FirstOrDefault((LocalMapMarkerSet s) => s.Type == LocalMapMarkType.Loot);
+                    if (localMapMarkerSet == null) {
+                        return false;
+                    }
+                    LocalMapMarkerPCView item = WidgetFactory.GetWidget<LocalMapMarkerPCView>(localMapMarkerSet.View, true, false);
+                    item.transform.SetParent(localMapMarkerSet.Container, false);
+                    item.Initialize(__instance.m_Image.rectTransform.sizeDelta, delegate {
+                        WidgetFactory.DisposeWidget<LocalMapMarkerPCView>(item);
+                    });
+                    item.Bind(localMapMarkerVM);
+                    doorSprite ??= AssetLoader.LoadInternal("icons", "door_map_marker.png", new Vector2Int(128, 128));
+                    anchorSprite ??= AssetLoader.LoadInternal("icons", "anchor_map_marker.png", new Vector2Int(128, 128));
+
+                    item.transform.Find("Mark").GetComponent<Image>().sprite = localMapMarkerVM.MarkerType switch {
+                        LocalMapMarkType_EXT.Door => doorSprite,
+                        LocalMapMarkType_EXT.SaveAnchor => anchorSprite,
+                        _ => null,
+                    };
+                } catch (Exception ex) {
+                    Main.Error(ex);
+                }
+
+                return false;
+            }
+            return true;
+        }
+    }
+
+    public static class LocalMapMarkType_EXT {
+        public const LocalMapMarkType Door = (LocalMapMarkType)100;
+        public const LocalMapMarkType SaveAnchor = (LocalMapMarkType)101;
+    }
+    class DoorMarkerHandler : IAreaActivationHandler {
+        private static DoorMarkerHandler _Instance = null;
+        public static DoorMarkerHandler Instance => _Instance ??= new();
+
+        private static SharedStringAsset doorDescription;
+        private static SharedStringAsset anchorDescription;
+
+        private static readonly BlueprintGuid AutoSaveGuid = BlueprintGuid.Parse("92be2851e8c54cc4a623094592d38d47");
+
+        public void OnAreaActivated() {
+            doorDescription ??= new() {
+                String = Helpers.CreateString("door.mapmarker", "Door"),
+                name = "bubble.door.mapmarker",
+                hideFlags = HideFlags.DontSave
+            };
+            anchorDescription ??= new() {
+                String = Helpers.CreateString("anchor.mapmarker", "Save Anchor"),
+                name = "bubble.anchor.mapmarker",
+                hideFlags = HideFlags.DontSave
+            };
+
+            foreach (var interaction in Game.Instance.AreaInteractiveObjects.m_Entries.Keys) {
+                if (interaction is not MapObjectEntityData entityData) continue;
+
+                foreach (var part in entityData.Interactions) {
+                    if (part is InteractionDoorPart) {
+                        AddMapMarkerPart(part.Owner, LocalMapMarkType_EXT.Door, doorDescription);
+                    } else if (part is InteractionSkillCheckPart skillCheckPart) {
+                        Main.Log($"is skill check part: {part.Owner.View.gameObject.name}");
+                        if (skillCheckPart.Settings?.CheckPassedActions?.deserializedGuid == AutoSaveGuid) {
+                            AddMapMarkerPart(part.Owner, LocalMapMarkType_EXT.SaveAnchor, anchorDescription);
+                        }
+                    }
+
+                }
+            }
+        }
+
+        private static void AddMapMarkerPart(MapObjectEntityData owner, LocalMapMarkType type, SharedStringAsset description) {
+            LocalMapMarkerPart localMapMarkerPart = owner.Ensure<LocalMapMarkerPart>();
+            localMapMarkerPart.IsRuntimeCreated = true;
+            localMapMarkerPart.Settings.Type = type;
+            localMapMarkerPart.Settings.Description = description;
+            localMapMarkerPart.Settings.DescriptionUnit = null;
+            localMapMarkerPart.SetHidden(false);
+        }
+    }
 
     class MinorVisualTweaks {
         public static void Install() {
+
+        }
+
+        internal static void PrintDoors() {
+
+
+
 
         }
     }
