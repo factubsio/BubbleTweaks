@@ -26,6 +26,7 @@ using Kingmaker.UI.MVVM._PCView.ServiceWindows.LocalMap;
 using Owlcat.Runtime.UI.Utility;
 using Kingmaker.PubSubSystem;
 using Kingmaker.Blueprints;
+using Kingmaker.Dungeon;
 
 namespace BubbleTweaks {
 
@@ -276,6 +277,10 @@ namespace BubbleTweaks {
         private static readonly BlueprintGuid AutoSaveGuid = BlueprintGuid.Parse("92be2851e8c54cc4a623094592d38d47");
 
         public void OnAreaActivated() {
+            if (!DungeonController.IsDungeonArea)
+                return;
+
+
             doorDescription ??= new() {
                 String = Helpers.CreateString("door.mapmarker", "Door"),
                 name = "bubble.door.mapmarker",
@@ -291,10 +296,9 @@ namespace BubbleTweaks {
                 if (interaction is not MapObjectEntityData entityData) continue;
 
                 foreach (var part in entityData.Interactions) {
-                    if (part is InteractionDoorPart) {
+                    if (part is InteractionDoorPart doorPart && doorPart.Enabled && doorPart.Owner.IsVisibleForPlayer) {
                         AddMapMarkerPart(part.Owner, LocalMapMarkType_EXT.Door, doorDescription);
                     } else if (part is InteractionSkillCheckPart skillCheckPart) {
-                        Main.Log($"is skill check part: {part.Owner.View.gameObject.name}");
                         if (skillCheckPart.Settings?.CheckPassedActions?.deserializedGuid == AutoSaveGuid) {
                             AddMapMarkerPart(part.Owner, LocalMapMarkType_EXT.SaveAnchor, anchorDescription);
                         }

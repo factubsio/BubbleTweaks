@@ -288,9 +288,6 @@ namespace BubbleTweaks {
             Enabled = true;
             ModPath = modEntry.Path;
 
-            BundleManger.AddBundle("tutorialcanvas");
-            Main.Log("Loaded bundle");
-
             harmony.PatchAll();
             SpeedTweaks.Install();
             Crusade.Install();
@@ -300,7 +297,7 @@ namespace BubbleTweaks {
             EventBus.Subscribe(AoeAreaIndicators.Instance);
             EventBus.Subscribe(DoorMarkerHandler.Instance);
             //StatusConditions.Install();
-            LuckMeter.Install();
+            //LuckMeter.Install();
 
 
             return true;
