@@ -6,7 +6,8 @@ namespace BubbleTweaks {
     internal class InteractionHighlightToggle {
         [HarmonyPatch(typeof(InteractionHighlightController))]
         static class InteractionHighlightController_Patch {
-            [HarmonyPatch(nameof(InteractionHighlightController.HighlightOn)), HarmonyPrefix]
+            // Low priority for interop w/ ToyBox
+            [HarmonyPatch(nameof(InteractionHighlightController.HighlightOn)), HarmonyPrefix, HarmonyPriority(Priority.VeryLow)]
             static bool HighlightOn(InteractionHighlightController __instance) {
                 try {
                     if (__instance.m_Inactive || !BubbleSettings.Instance.InteractionHighlight.GetValue())
@@ -26,7 +27,8 @@ namespace BubbleTweaks {
                 return true;
             }
 
-            [HarmonyPatch(nameof(InteractionHighlightController.HighlightOff)), HarmonyPrefix]
+            // Low priority for interop w/ ToyBox
+            [HarmonyPatch(nameof(InteractionHighlightController.HighlightOff)), HarmonyPrefix, HarmonyPriority(Priority.VeryLow)]
             static bool HighlightOff(InteractionHighlightController __instance) {
                 try {
                     if (__instance.m_Inactive || !BubbleSettings.Instance.InteractionHighlight.GetValue())
