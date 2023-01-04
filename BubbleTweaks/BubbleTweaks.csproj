@@ -187,6 +187,7 @@
     <Compile Include="Config\AddedContent.cs" />
     <Compile Include="Crusade.cs" />
     <Compile Include="Extensions\ExtentionMethods.cs" />
+    <Compile Include="InteractionHighlightToggle.cs" />
     <Compile Include="LuckMeter.cs" />
     <Compile Include="MinorVisualTweaks.cs" />
     <Compile Include="Resources.cs" />
