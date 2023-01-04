@@ -211,7 +211,7 @@
     //PackRagerAlliedSpellcasterArea
     {
       "ability": "f2c7d43c2dcfce5488a377076f9db957",
-       "type": "skip"
+      "type": "skip"
     },
     //PackRagerBackToBackArea
     {
@@ -2278,6 +2278,32 @@
       "ability": "b2394fd9423c44a0a8bdb518b66e9266",
       "type": "skip"
     },
+    
+    //**** Character Options+
+    // Consecrate
+    {
+      "ability": "ba25ca0ee0e74199967db79cfae32318"
+    },
+    // Desecrate
+    {
+      "ability": "372f94fb0a4548138e8546783792ec3d"
+    },
+    // Frost Fall
+    {
+      "ability": "281520ac2eef4a718685ca5035e5a622",
+      "type": "bad"
+    },
+    // Frozen Note
+    {
+      "ability": "281520ac2eef4a718685ca5035e5a622",
+      "type": "bad"
+    },
+    // Ice Slick
+    {
+      "ability": "b94a289c49c2475483a5e171ad39fba6",
+      "type": "bad"
+    },
+    //**** End Character Options+
 
     {
       //EXAMPLE_DOES_NOT_EXIST: use "hi" and "normal" to set custom rgb for the highlighted/normal circles
