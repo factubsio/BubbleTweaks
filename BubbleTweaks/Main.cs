@@ -309,14 +309,14 @@ namespace BubbleTweaks {
 
 #if DEBUG
             if (Input.GetKeyDown(KeyCode.LeftAlt)) {
-                MinorVisualTweaks.PrintDoors();
+                // MinorVisualTweaks.PrintDoors();
                 //ActionWheel.Toggle();
             } else if (Input.GetKeyUp(KeyCode.LeftAlt)) {
                 //ActionWheel.Hide();
             } else if (Input.GetKeyDown(KeyCode.F) && Shifting) {
                 modEntry.GetType().GetMethod("Reload", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(modEntry, new object[] { });
             } else if (Input.GetKeyDown(KeyCode.R) && Shifting) {
-                Blueprinting.Test(ResourcesLibrary.BlueprintsCache);
+                // Blueprinting.Test(ResourcesLibrary.BlueprintsCache);
                 //PartyVM_Patches.Repatch();
                 //LuckMeter.Show();
             }

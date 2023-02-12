@@ -118,6 +118,10 @@
       <HintPath>$(SolutionDir)lib\UniRx_public.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="UnityEngine.TextCoreModule">
+      <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\UnityEngine.TextCoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Unity.TextMeshPro">
       <HintPath>$(WrathPathDebug)\Wrath_Data\Managed\Unity.TextMeshPro.dll</HintPath>
       <Private>False</Private>
@@ -194,6 +198,8 @@
     <Compile Include="SpeedTweaks.cs" />
     <Compile Include="StatisticsOhMy.cs" />
     <Compile Include="StatusConditions.cs" />
+    <Compile Include="TrumpetGirl.cs" />
+    <Compile Include="TrumpetGirl\Tooltips.cs" />
     <Compile Include="Utilities\AssetLoader.cs" />
     <Compile Include="Utilities\Attributes.cs" />
     <Compile Include="Utilities\DescriptionTools.cs" />
