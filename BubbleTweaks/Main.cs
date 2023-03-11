@@ -56,6 +56,9 @@ namespace BubbleTweaks {
 
         public SettingsEntityBool PartyViewWith8Slots = new("bubbles.settings.game.ui-party-view-eight", false, false, true);
 
+        private const string InteractionHighlightKey = "bubbles.settings.game.interaction-highlight-toggle";
+        public SettingsEntityBool InteractionHighlight = new(InteractionHighlightKey, defaultValue: true);
+
         public UISettingsEntitySliderFloat PauseFadeStrengthSlider;
         public UISettingsEntitySliderFloat TacticalCombatSpeedSlider;
         public UISettingsEntitySliderFloat InCombatSpeedSlider;
@@ -67,6 +70,7 @@ namespace BubbleTweaks {
         public UISettingsEntityDropdownEnum<AttackTextColor> CursorAttackTextColorDropdown;
 
         public UISettingsEntityBool PartyViewWith8SlotsToggle;
+        public UISettingsEntityBool InteractionHighlightToggle;
 
         private BubbleSettings() { }
 
@@ -168,6 +172,17 @@ namespace BubbleTweaks {
             } catch (Exception ex) {
                 Main.Error(ex, "making enhanced party view toggle");
             }
+
+            try {
+                InteractionHighlightToggle =
+                    MakeToggle(
+                        InteractionHighlightKey,
+                        "Interaction Highlight Toggle",
+                        "Makes the interactable highlight hotkey a toggle instead of hold. Press the hotkey once (usually Tab) to enable highlights, and again to disable.");
+                InteractionHighlightToggle.LinkSetting(InteractionHighlight);
+            } catch (Exception ex) {
+                Main.Error(ex, "making interaction highlight toggle");
+            }
         }
 
         private static readonly BubbleSettings instance = new();
@@ -201,6 +216,7 @@ namespace BubbleTweaks {
             Game.Instance.UISettingsManager.m_GameSettingsList.Add(
                 BubbleSettings.MakeSettingsGroup("bubble.ui-tweaks", "Bubble UI tweaks",
                     BubbleSettings.Instance.PauseFadeStrengthSlider,
+                    BubbleSettings.Instance.InteractionHighlightToggle,
                     BubbleSettings.Instance.PartyViewWith8SlotsToggle));
 
             if (BubbleSettings.Instance.PartyViewWith8Slots.GetValue()) {
