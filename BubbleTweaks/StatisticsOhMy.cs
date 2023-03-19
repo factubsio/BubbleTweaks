@@ -324,6 +324,7 @@ namespace BubbleTweaks {
     static class CharacterInfoPCView_Patches {
         [HarmonyPatch("BindViewImplementation"), HarmonyPrefix]
         static void BindViewImplementation(CharacterInfoPCView __instance) {
+            Main.Log("HERE HER HERE");
             try {
                 if (!__instance.m_ComponentViews.ContainsKey(CharInfoComponentType_EXT.Statistics)) {
                     Main.LogDebug($"abilities parent: { __instance.m_AbilitiesView.transform.parent.name}");
@@ -432,13 +433,13 @@ namespace BubbleTweaks {
 
     [HarmonyPatch(typeof(CharInfoMenuSelectorView))]
     static class CharInfoMenuSelectorView_Patches {
-        [HarmonyPatch("Initialize"), HarmonyPrefix]
+        [HarmonyPatch("Initialize"), HarmonyPostfix]
         static void Initialize(CharInfoMenuSelectorView __instance) {
             Main.LogDebug("Modifying CharInfoMenuSelectorView.Initialize");
-            if (__instance.m_MenuEntities.Empty()) {
-                Main.LogDebug("Adding our new prefab");
+            for (int i = __instance.m_MenuEntities.Count; i < CharInfoWindowUtility.GetPagesList().Count; i++) {
                 var prefab = __instance.GetComponentInChildren<CharInfoMenuEntityView>().gameObject;
-                GameObject.Instantiate(prefab, __instance.gameObject.transform);
+                var added = GameObject.Instantiate(prefab, __instance.gameObject.transform);
+                __instance.m_MenuEntities.Add(added.GetComponent<CharInfoMenuEntityView>());
             }
         }
     }

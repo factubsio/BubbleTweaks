@@ -188,7 +188,7 @@ namespace BubbleTweaks {
                 Main.Log("ERROR: cannot find ldc 1");
                 return instructions;
             } else {
-                Main.Log("Found ldc 1 @ " + load_const);
+                Main.LogDebug("Found ldc 1 @ " + load_const);
             }
 
             var old = input[load_const];
@@ -292,8 +292,7 @@ namespace BubbleTweaks {
                 hideFlags = HideFlags.DontSave
             };
 
-            foreach (var interaction in Game.Instance.AreaInteractiveObjects.m_Entries.Keys) {
-                if (interaction is not MapObjectEntityData entityData) continue;
+            foreach (var entityData in Game.Instance.State.MapObjects) {
 
                 foreach (var part in entityData.Interactions) {
                     if (part is InteractionDoorPart doorPart && doorPart.Enabled && doorPart.Owner.IsVisibleForPlayer) {

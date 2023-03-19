@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace BubbleTweaks.TrumpetGirl {
+#if DEBUG
     [HarmonyPatch]
     class Tooltips {
         [HarmonyPatch(typeof(TooltipTemplateAbility), nameof(TooltipTemplateAbility.GetBody))]
@@ -53,4 +54,5 @@ namespace BubbleTweaks.TrumpetGirl {
             __result = list;
         }
     }
+#endif
 }

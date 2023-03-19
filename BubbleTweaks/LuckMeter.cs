@@ -446,9 +446,9 @@ namespace BubbleTweaks {
         private static readonly BubblePatch Patch_set_StartIndex = BubblePatch.Method(typeof(PartyVM), typeof(PartyVM_Patches), "UpdateStartValue");
 
         public static void Repatch() {
-            if (BubbleSettings.Instance.PartyViewWith8Slots.GetValue())
-                WantedSlots = 8;
-            else
+            //if (BubbleSettings.Instance.PartyViewWith8Slots.GetValue())
+            //    WantedSlots = 8;
+            //else
                 WantedSlots = 6;
 
             if (SupportedSlots == WantedSlots)

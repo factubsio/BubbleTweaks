@@ -162,12 +162,12 @@ namespace BubbleTweaks {
                 Main.Error(ex, "making combat text color");
             }
 
-            try {
-                PartyViewWith8SlotsToggle = MakeToggle("settings.game.ui-party-view-replacement-eight", "Expanded party view (eight slots)", "Replace the Owlcat party view at the bottom of the screen with a custom version that can show eight characters without scrolling\n<size=150%><b>Requires a full game restart</b></size>");
-                PartyViewWith8SlotsToggle.LinkSetting(PartyViewWith8Slots);
-            } catch (Exception ex) {
-                Main.Error(ex, "making enhanced party view toggle");
-            }
+            //try {
+            //    PartyViewWith8SlotsToggle = MakeToggle("settings.game.ui-party-view-replacement-eight", "Expanded party view (eight slots)", "Replace the Owlcat party view at the bottom of the screen with a custom version that can show eight characters without scrolling\n<size=150%><b>Requires a full game restart</b></size>");
+            //    PartyViewWith8SlotsToggle.LinkSetting(PartyViewWith8Slots);
+            //} catch (Exception ex) {
+            //    Main.Error(ex, "making enhanced party view toggle");
+            //}
         }
 
         private static readonly BubbleSettings instance = new();
@@ -200,12 +200,11 @@ namespace BubbleTweaks {
 
             Game.Instance.UISettingsManager.m_GameSettingsList.Add(
                 BubbleSettings.MakeSettingsGroup("bubble.ui-tweaks", "Bubble UI tweaks",
-                    BubbleSettings.Instance.PauseFadeStrengthSlider,
-                    BubbleSettings.Instance.PartyViewWith8SlotsToggle));
+                    BubbleSettings.Instance.PauseFadeStrengthSlider ));
 
-            if (BubbleSettings.Instance.PartyViewWith8Slots.GetValue()) {
-                PartyVM_Patches.Repatch();
-            }
+            //if (BubbleSettings.Instance.PartyViewWith8Slots.GetValue()) {
+            //    PartyVM_Patches.Repatch();
+            //}
         }
     }
 
