@@ -3,8 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Need png files to build
 # Asset files
-*.png
+#*.png
 
 # User-specific files
 *.rsuser
