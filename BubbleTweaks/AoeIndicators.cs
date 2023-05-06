@@ -90,7 +90,7 @@ namespace BubbleTweaks {
                 var material = markerObj.GetComponentInChildren<MeshRenderer>().material;
                 material.color = GetColor(false, entityData);
                 var decal = markerObj.GetComponentInChildren<GUIDecal>();
-                decal.SetSpellRangeScale(entityData.Blueprint.Size.Meters * 2 + 0.25f, 0);
+                decal.SetSpellRangeScale(entityData.Blueprint.Size.Meters * 2 + 0.25f, 0, 0);
                 decal.SetRangeColor(false, true, 1);
 
                 markers.Add(entityData, new AreaMarker {
