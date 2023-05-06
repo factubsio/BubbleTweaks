@@ -3,8 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# Do these exist as gimp files?  Is there a tool for generating them? For now checking them in so other people can build
 # Asset files
-*.png
+#*.png
 
 # User-specific files
 *.rsuser
