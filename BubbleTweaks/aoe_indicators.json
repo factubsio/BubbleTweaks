@@ -2305,6 +2305,14 @@
     },
     //**** End Character Options+
 
+    //**** Expanded Content
+    //Blood Mist
+    {
+      "ability": "158ccdcee3fb4a34b1630f07a20be8a6",
+      "type": "bad"
+    },
+    //**** End Expanded Content
+	
     {
       //EXAMPLE_DOES_NOT_EXIST: use "hi" and "normal" to set custom rgb for the highlighted/normal circles
       "ability": "EXAMPLE",
